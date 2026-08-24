@@ -1,0 +1,32 @@
+# Build artifacts (regenerable - do NOT commit)
+/build/
+/build_artefacts/
+/dist/
+*.zip
+
+# macOS metadata
+.DS_Store
+
+# CMake cache
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+
+# IDE
+.vscode/
+.idea/
+*.xcodeproj/
+*.xcworkspace/
+
+# Compiled objects
+*.o
+*.a
+*.d
+*.dylib
+*.so
+*.dll
+
+# JUCE generated (if using FetchContent, do not commit JUCE folder)
+/_deps/
+
