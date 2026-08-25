@@ -1,9 +1,6 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
-// =========================================================
-// Bjorklund helper (editor)
-// =========================================================
 static std::vector<int> gen_euclid(int pulses, int steps, int offset) {
     std::vector<int> pat(steps, 0);
     if (steps == 0) return pat;
@@ -16,16 +13,12 @@ static std::vector<int> gen_euclid(int pulses, int steps, int offset) {
     return pat;
 }
 
-// =========================================================
-// Constructor
-// =========================================================
 OrbitaLPGAudioProcessorEditor::OrbitaLPGAudioProcessorEditor(OrbitaLPGAudioProcessor& p)
     : AudioProcessorEditor(&p), audioProcessor(p)
 {
     setLookAndFeel(&customLookAndFeel);
     setWantsKeyboardFocus(true);
 
-    // ----- Label helper -----
     auto lbl = [this](juce::Label& l, const char* txt, juce::Colour col = juce::Colour(160,170,180)) {
         l.setText(txt, juce::dontSendNotification);
         l.setFont(juce::FontOptions(9.5f, juce::Font::bold));
@@ -47,7 +40,6 @@ OrbitaLPGAudioProcessorEditor::OrbitaLPGAudioProcessorEditor(OrbitaLPGAudioProce
         addAndMakeVisible(s);
     };
 
-    // Header
     titleLabel.setText("ORBITA-LPG   ///   6-VOICE MATRIX   coded by @laurorobles", juce::dontSendNotification);
     titleLabel.setFont(juce::FontOptions(11.0f, juce::Font::bold));
     titleLabel.setColour(juce::Label::textColourId, juce::Colour(200,210,220));
@@ -72,13 +64,12 @@ OrbitaLPGAudioProcessorEditor::OrbitaLPGAudioProcessorEditor(OrbitaLPGAudioProce
         seqBtn.setButtonText(audioProcessor.seqEnabled ? "SEQ: ON" : "SEQ: OFF");
     };
 
-    // Master
     lbl(mVolLbl,   "M.VOL",  juce::Colours::yellow);
     lbl(mDriveLbl, "DRIVE",  juce::Colour(230,140,30));
     lbl(mBpmLbl,   "BPM",    juce::Colour(160,170,180));
     lbl(mSwingLbl, "SWING",  juce::Colour(160,170,180));
     lbl(mChaosLbl, "CHAOS",  juce::Colour(160,170,180));
-    lbl(mScaleLbl, "SCALE",  juce::Colours::cyan);
+    lbl(mScaleLbl, "G.SCALE",juce::Colours::cyan);
 
     masterSld(mVolSld,   "");
     masterSld(mDriveSld, "");
@@ -91,7 +82,6 @@ OrbitaLPGAudioProcessorEditor::OrbitaLPGAudioProcessorEditor(OrbitaLPGAudioProce
         globalScaleCombo.addItem(s, globalScaleCombo.getNumItems()+1);
     globalScaleCombo.setSelectedItemIndex(0);
 
-    // APVTS attachments -- Master
     mAtt[0] = std::make_unique<SldAtt>(audioProcessor.apvts, "master_vol",   mVolSld);
     mAtt[1] = std::make_unique<SldAtt>(audioProcessor.apvts, "master_drive", mDriveSld);
     mAtt[2] = std::make_unique<SldAtt>(audioProcessor.apvts, "bpm",          mBpmSld);
@@ -99,7 +89,6 @@ OrbitaLPGAudioProcessorEditor::OrbitaLPGAudioProcessorEditor(OrbitaLPGAudioProce
     mAtt[4] = std::make_unique<SldAtt>(audioProcessor.apvts, "chaos",        mChaosSld);
     gScaleAtt = std::make_unique<CmbAtt>(audioProcessor.apvts, "global_scale", globalScaleCombo);
 
-    // Track buttons (inside radar module)
     for (int i = 0; i < 6; ++i) {
         tBtns[i].setButtonText("T" + juce::String(i+1));
         btn(tBtns[i], juce::Colour(22,28,35), juce::Colours::white);
@@ -107,7 +96,6 @@ OrbitaLPGAudioProcessorEditor::OrbitaLPGAudioProcessorEditor(OrbitaLPGAudioProce
         tBtns[i].onRightClick = [this,i]() { toggleMute(i); };
     }
 
-    // Patterns
     addAndMakeVisible(patternsCombo);
     patternsCombo.addItem("PATTERNS...", 1);
     patternsCombo.addItem("E(3,8) Tresillo", 2);
@@ -126,7 +114,6 @@ OrbitaLPGAudioProcessorEditor::OrbitaLPGAudioProcessorEditor(OrbitaLPGAudioProce
 
     btn(rRandBtn, juce::Colour(40,20,50), juce::Colours::violet);
 
-    // Rhythm sliders
     auto rhythmSld = [this](juce::Slider& s) {
         s.setSliderStyle(juce::Slider::LinearHorizontal);
         s.setTextBoxStyle(juce::Slider::TextBoxRight, false, 28, 18);
@@ -138,12 +125,6 @@ OrbitaLPGAudioProcessorEditor::OrbitaLPGAudioProcessorEditor(OrbitaLPGAudioProce
     for (int t = 0; t < 6; ++t) {
         rhythmSld(stepsSld[t]); rhythmSld(pulsesSld[t]); rhythmSld(offsetSld[t]);
     }
-
-    // West Coast
-    addAndMakeVisible(trackScaleCombo);
-    for (auto* s : {"Chromatic","Major","Minor","Dorian","Phrygian","Lydian","Mixolydian","Pent. Maj","Pent. Min","Harm. Min"})
-        trackScaleCombo.addItem(s, trackScaleCombo.getNumItems()+1);
-    trackScaleCombo.setSelectedItemIndex(0);
 
     auto mode281Names = {"TRANS","SUST","CYCLE"};
     juce::Colour m281cols[] = {juce::Colour(60,160,80), juce::Colour(30,35,42), juce::Colour(30,35,42)};
@@ -161,7 +142,19 @@ OrbitaLPGAudioProcessorEditor::OrbitaLPGAudioProcessorEditor(OrbitaLPGAudioProce
     btn(sRandBtn,   juce::Colour(30,35,42), juce::Colours::white);
     btn(copyLastBtn,juce::Colour(30,35,42), juce::Colours::white);
     btn(copyNextBtn,juce::Colour(30,35,42), juce::Colours::white);
-    btn(noteBtn,    juce::Colour(20,50,70), juce::Colours::cyan);
+    
+    // Matriz botones "Note Mode" mapeados a los parámetros booleanos
+    for (int t = 0; t < 6; ++t) {
+        noteBtns[t].setButtonText("NOTE");
+        noteBtns[t].setClickingTogglesState(true);
+        noteBtns[t].setColour(juce::TextButton::buttonColourId, juce::Colour(30,35,42));
+        noteBtns[t].setColour(juce::TextButton::buttonOnColourId, juce::Colour(20,50,70));
+        noteBtns[t].setColour(juce::TextButton::textColourOnId, juce::Colours::cyan);
+        addChildComponent(noteBtns[t]);
+        
+        nAtt[t] = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(
+            audioProcessor.apvts, "t" + juce::String(t+1) + "_notemode", noteBtns[t]);
+    }
 
     juce::String sNames[] = {"PITCH","P.DRP","MRPH","FOLD","FM","RISE","FALL","RESP","BRGT","VOL"};
     juce::Colour sCols[]  = {juce::Colours::white, juce::Colours::white, juce::Colours::white,
@@ -183,7 +176,6 @@ OrbitaLPGAudioProcessorEditor::OrbitaLPGAudioProcessorEditor(OrbitaLPGAudioProce
         }
     }
 
-    // Echo
     btn(echoSyncBtn, juce::Colour(16,45,35), juce::Colour(65,229,155));
     juce::String eNames[] = {"TIME","FDBK","MIX","HPF","LPF","WOW"};
     juce::String eIds[]   = {"echo_time","echo_fdbk","echo_mix","echo_hpf","echo_lpf","echo_wow"};
@@ -211,14 +203,14 @@ void OrbitaLPGAudioProcessorEditor::selectTrack(int t) {
         bool mut = trackMutes[i];
         tBtns[i].setColour(juce::TextButton::buttonColourId, sel ? juce::Colour(50,55,20) : juce::Colour(22,28,35));
         tBtns[i].setColour(juce::TextButton::textColourOffId, mut ? juce::Colours::darkgrey : (sel ? juce::Colours::yellow : juce::Colours::white));
-    }
-    for (int i = 0; i < 6; ++i) {
-        bool show = (i == t);
-        stepsSld[i].setVisible(show);
-        pulsesSld[i].setVisible(show);
-        offsetSld[i].setVisible(show);
+        
+        stepsSld[i].setVisible(sel);
+        pulsesSld[i].setVisible(sel);
+        offsetSld[i].setVisible(sel);
+        noteBtns[i].setVisible(sel); // Controla la visibilidad
+        
         for (int j = 0; j < 10; ++j) {
-            vSliders[i][j].slider.setVisible(show);
+            vSliders[i][j].slider.setVisible(sel);
         }
     }
 }
@@ -241,29 +233,22 @@ bool OrbitaLPGAudioProcessorEditor::keyPressed(const juce::KeyPress& key) {
 
 void OrbitaLPGAudioProcessorEditor::timerCallback() { repaint(radarArea); }
 
-// =========================================================
-// resized() — Layout maestro con regla de 2px
-// =========================================================
 void OrbitaLPGAudioProcessorEditor::resized() {
     auto b = getLocalBounds().reduced(12);
 
-    // Header
     topArea = b.removeFromTop(24);
     b.removeFromTop(8);
 
-    // Columna izquierda: Radar + controles de pista abajo
     radarArea = b.removeFromLeft(420);
     b.removeFromLeft(12);
     auto rightCol = b;
 
-    // Columna derecha: Master / Synth / Echo
     masterArea = rightCol.removeFromTop(70);
     rightCol.removeFromTop(8);
     synthArea  = rightCol.removeFromTop(290);
     rightCol.removeFromTop(8);
     echoArea   = rightCol;
 
-    // ---- Header ----
     {
         auto r = topArea;
         titleLabel.setBounds(r.removeFromLeft(350));
@@ -274,33 +259,28 @@ void OrbitaLPGAudioProcessorEditor::resized() {
         presetCombo.setBounds(r.removeFromRight(120).reduced(0,2));
     }
 
-    // ---- Radar Module (left) — reserva zona inferior para controles ----
     {
         auto ra = radarArea;
-        // Zona inferior fija de 110px para track controls
         auto controlZone = ra.removeFromBottom(110);
-        // 'ra' es ahora el radar puro
-
-        // Dentro del control zone: padding
         controlZone.reduce(8, 6);
 
-        // Fila A: T1-T6  |  PATTERNS  |  RAND
         auto rowA = controlZone.removeFromTop(22);
         for (int i = 0; i < 6; ++i)
             tBtns[i].setBounds(rowA.removeFromLeft(30).reduced(1,0));
         rowA.removeFromLeft(10);
         patternsCombo.setBounds(rowA.removeFromLeft(120).reduced(0,1));
         rowA.removeFromLeft(5);
-        rRandBtn.setBounds(rowA.removeFromLeft(55).reduced(0,1));
+        rRandBtn.setBounds(rowA.removeFromLeft(50).reduced(0,1));
+        rowA.removeFromLeft(4);
+        rResetBtn.setBounds(rowA.removeFromLeft(50).reduced(0,1));
 
         controlZone.removeFromTop(6);
 
-        // Filas B, C, D: STEPS / PULSES / OFFSET con regla 2px label
         auto placeRhythm = [&](juce::Label& l, juce::Slider* sArr) {
             auto row = controlZone.removeFromTop(20);
             int lw = 45;
             l.setBounds(row.removeFromLeft(lw));
-            row.removeFromLeft(2); // REGLA 2PX
+            row.removeFromLeft(2);
             for(int i=0; i<6; i++) sArr[i].setBounds(row);
             controlZone.removeFromTop(4);
         };
@@ -309,12 +289,11 @@ void OrbitaLPGAudioProcessorEditor::resized() {
         placeRhythm(offsetLbl, offsetSld);
     }
 
-    // ---- Master Module ----
     {
         auto mi = masterArea.reduced(10);
-        mi.removeFromTop(14); // titulo
+        mi.removeFromTop(14); 
         auto row1 = mi.removeFromTop(12);
-        mi.removeFromTop(2); // 2PX
+        mi.removeFromTop(2); 
         auto row2 = mi.removeFromTop(20);
 
         auto place = [&](juce::Label& l, juce::Slider& s, int w) {
@@ -330,23 +309,24 @@ void OrbitaLPGAudioProcessorEditor::resized() {
         globalScaleCombo.setBounds(row2.removeFromLeft(100).reduced(2,0));
     }
 
-    // ---- Synth Module ----
     {
         auto si = synthArea.reduced(10);
-        si.removeFromTop(14); // titulo
+        si.removeFromTop(14); 
 
-        // Fila 1: botones derecha
         auto sRow1 = si.removeFromTop(20);
-        noteBtn.setBounds(    sRow1.removeFromRight(50).reduced(0,1)); sRow1.removeFromRight(4);
-        copyNextBtn.setBounds(sRow1.removeFromRight(90).reduced(0,1)); sRow1.removeFromRight(4);
-        copyLastBtn.setBounds(sRow1.removeFromRight(90).reduced(0,1)); sRow1.removeFromRight(4);
+        
+        // Pone los 6 botones the NOTE en la misma coordenada visualmente 
+        auto noteRect = sRow1.removeFromRight(70).reduced(0,1);
+        for(int t=0; t<6; ++t) noteBtns[t].setBounds(noteRect);
+        
+        sRow1.removeFromRight(4);
+        copyNextBtn.setBounds(sRow1.removeFromRight(80).reduced(0,1)); sRow1.removeFromRight(4);
+        copyLastBtn.setBounds(sRow1.removeFromRight(80).reduced(0,1)); sRow1.removeFromRight(4);
         sRandBtn.setBounds(   sRow1.removeFromRight(50).reduced(0,1));
 
         si.removeFromTop(5);
 
-        // Fila 2: Track scale + mode buttons
         auto sRow2 = si.removeFromTop(20);
-        trackScaleCombo.setBounds(sRow2.removeFromLeft(100).reduced(0,1)); sRow2.removeFromLeft(15);
         mode281Lbl.setBounds(sRow2.removeFromLeft(28));
         for (int i = 0; i < 3; ++i) mode281[i].setBounds(sRow2.removeFromLeft(42).reduced(0,1));
         sRow2.removeFromLeft(15);
@@ -355,22 +335,20 @@ void OrbitaLPGAudioProcessorEditor::resized() {
 
         si.removeFromTop(10);
 
-        // Fila 3: Faders verticales con regla 2px (label encima, 2px, fader)
         int sw = si.getWidth() / 10;
         for (int i = 0; i < 10; ++i) {
             auto cell = si.removeFromLeft(sw);
             vSliders[0][i].label.setBounds(cell.removeFromTop(12));
-            cell.removeFromTop(2); // REGLA 2PX
+            cell.removeFromTop(2); 
             for (int t = 0; t < 6; ++t) {
                 vSliders[t][i].slider.setBounds(cell);
             }
         }
     }
 
-    // ---- Echo Module ----
     {
         auto ei = echoArea.reduced(10);
-        ei.removeFromTop(14); // titulo
+        ei.removeFromTop(14); 
         echoSyncBtn.setBounds(ei.removeFromLeft(80).withSizeKeepingCentre(70, 20));
         ei.removeFromLeft(5);
         int kw = ei.getWidth() / 6;
@@ -378,19 +356,14 @@ void OrbitaLPGAudioProcessorEditor::resized() {
             auto cell = ei.removeFromLeft(kw);
             auto kb = cell.withSizeKeepingCentre(38, 38);
             echoKnobs[i].slider.setBounds(kb);
-            // Label 2px ENCIMA del knob
             echoKnobs[i].label.setBounds(kb.getX()-8, kb.getY()-14, kb.getWidth()+16, 12);
         }
     }
 }
 
-// =========================================================
-// paint()
-// =========================================================
 void OrbitaLPGAudioProcessorEditor::paint(juce::Graphics& g) {
     g.fillAll(juce::Colour(13, 16, 20));
 
-    // Draw module backgrounds
     auto drawModule = [&](juce::Rectangle<int> r, juce::Colour bg, juce::Colour border) {
         g.setColour(bg);
         g.fillRoundedRectangle(r.toFloat(), 6.0f);
@@ -403,35 +376,27 @@ void OrbitaLPGAudioProcessorEditor::paint(juce::Graphics& g) {
     drawModule(synthArea,  juce::Colour(18,22,26), juce::Colour(50,55,65));
     drawModule(echoArea,   juce::Colour(14,18,22), juce::Colour(35,55,45));
 
-    // Module titles
     g.setFont(juce::FontOptions(10.0f, juce::Font::bold));
-
     g.setColour(juce::Colour(110,125,140));
     g.drawText("MASTER SYSTEM", masterArea.withTrimmedLeft(10).withTrimmedTop(6).withHeight(14), juce::Justification::topLeft);
-
     g.setColour(juce::Colour(65,229,155));
     g.drawText("RE-201 SPACE ECHO", echoArea.withTrimmedLeft(10).withTrimmedTop(6).withHeight(14), juce::Justification::topLeft);
-
     g.setColour(juce::Colour(200,150,50));
     g.drawText("WEST COAST SYNTHESIS  259/281/292", synthArea.withTrimmedLeft(10).withTrimmedTop(6).withHeight(14), juce::Justification::topLeft);
 
-    // --- Radar visual ---
     auto radarPure = radarArea;
-    radarPure.removeFromBottom(110); // misma reserva que en resized()
+    radarPure.removeFromBottom(110); 
 
     auto center = radarPure.getCentre().toFloat();
     float maxR   = std::min(radarPure.getWidth(), radarPure.getHeight()) * 0.45f;
 
-    // Fondo circular
     g.setColour(juce::Colour(8, 10, 13));
     g.fillEllipse(center.x - maxR, center.y - maxR, maxR*2, maxR*2);
 
-    // Cross-hair sutil
     g.setColour(juce::Colour(30, 38, 48));
     g.drawLine(center.x - maxR, center.y, center.x + maxR, center.y, 1.0f);
     g.drawLine(center.x, center.y - maxR, center.x, center.y + maxR, 1.0f);
 
-    // Anillos + polígonos
     for (int t = 0; t < 6; ++t) {
         float r = (t + 1) * (maxR / 6.8f);
         bool sel = (t == currentTrack);
@@ -460,7 +425,7 @@ void OrbitaLPGAudioProcessorEditor::paint(juce::Graphics& g) {
             float px = center.x + std::cos(angle) * r;
             float py = center.y + std::sin(angle) * r;
             if (first) { poly.startNewSubPath(px, py); first = false; }
-            else        { poly.lineTo(px, py); }
+            else       { poly.lineTo(px, py); }
             g.setColour(dotCol);
             g.fillEllipse(px - 3.5f, py - 3.5f, 7.0f, 7.0f);
         }
@@ -470,7 +435,6 @@ void OrbitaLPGAudioProcessorEditor::paint(juce::Graphics& g) {
             g.strokePath(poly, juce::PathStrokeType(1.5f));
         }
 
-        // Playhead
         int cur = audioProcessor.voices[t].current_step % (steps > 0 ? steps : 1);
         float pAngle = (cur / (float)(steps > 0 ? steps : 16)) * juce::MathConstants<float>::twoPi - juce::MathConstants<float>::halfPi;
         float px = center.x + std::cos(pAngle) * r;

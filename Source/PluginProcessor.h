@@ -1,7 +1,6 @@
 #pragma once
 #include <JuceHeader.h>
 
-
 struct TrackParams {
     std::atomic<float>* steps;
     std::atomic<float>* pulses;
@@ -17,9 +16,10 @@ struct TrackParams {
     std::atomic<float>* brgt;
     std::atomic<float>* noise;
     std::atomic<float>* vol;
+    std::atomic<float>* notemode; // Nuevo parámetro para el Modo Nota
 };
 
-class OrbitaLPGAudioProcessor; // forward decl
+class OrbitaLPGAudioProcessor;
 
 class WestCoastVoice {
 public:
@@ -27,15 +27,15 @@ public:
     void trigger(int note, float vel) { 
         env_stage = 1; env = 0.0f; active_note = note; 
     }
-    float process(float& outL, float& outR, juce::AudioProcessorValueTreeState& apvts, int trackIdx, float chaos_val, int global_scale);
+    float process(float& outL, float& outR, const TrackParams& params, float chaos_val, int global_scale);
     
     int current_step = 0;
+    float lpg_state = 0.0f;
 private:
     double sr = 44100.0;
     float phase = 0.0f;
     float env = 0.0f;
-    int env_stage = 0; // 0=idle, 1=rise, 2=fall
-    float lpg_state = 0.0f;
+    int env_stage = 0; 
     int active_note = 60;
 };
 
@@ -65,10 +65,9 @@ public:
     void getStateInformation(juce::MemoryBlock& destData) override;
     void setStateInformation(const void* data, int sizeInBytes) override;
 
-    
     juce::AudioProcessorValueTreeState apvts;
     
-    // Cached Parameters for DSP (Avoids string allocs in audio thread)
+    // Punteros Cacheados para optimización extrema DSP
     std::atomic<float>* p_master_vol = nullptr;
     std::atomic<float>* p_bpm = nullptr;
     std::atomic<float>* p_is_playing = nullptr;
@@ -81,7 +80,6 @@ public:
     std::atomic<float>* p_echo_wow = nullptr;
     
     TrackParams tParams[6];
-
     
     // Playback
     bool isPlaying = false;
@@ -91,10 +89,9 @@ public:
     WestCoastVoice voices[6];
 
     // Delay
-    juce::dsp::DelayLine<float> delayL{48000 * 2};
-    juce::dsp::DelayLine<float> delayR{48000 * 2};
-    float delay_fb_L = 0.0f;
-    float delay_fb_R = 0.0f;
+    juce::dsp::DelayLine<float, juce::dsp::DelayLineInterpolationTypes::Lagrange3rd> delayL{48000 * 2};
+    juce::dsp::DelayLine<float, juce::dsp::DelayLineInterpolationTypes::Lagrange3rd> delayR{48000 * 2};
+    juce::dsp::Oversampling<float> oversampler;
 
 private:
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
