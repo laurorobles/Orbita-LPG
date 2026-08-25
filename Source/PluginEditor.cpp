@@ -17,7 +17,7 @@ static std::vector<int> gen_euclid(int pulses, int steps, int offset) {
 }
 
 // =========================================================
-// HELPER: Escalas para la interfaz gráfica (UI Quantizer)
+// HELPER: Escalas musicales (Mapeo exacto con PluginProcessor)
 // =========================================================
 static const std::vector<std::vector<int>> SCALES_UI = {
     {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}, // Chromatic
@@ -32,6 +32,7 @@ static const std::vector<std::vector<int>> SCALES_UI = {
     {0, 2, 3, 5, 7, 8, 11}                  // Harmonic Minor
 };
 
+// Cuantiza un valor midi crudo al grado más cercano de la escala seleccionada
 static float quantize_pitch_ui(float raw_midi, int scale_idx) {
     if (scale_idx < 1) scale_idx = 1;
     if (scale_idx > 10) scale_idx = 10;
@@ -52,7 +53,6 @@ static float quantize_pitch_ui(float raw_midi, int scale_idx) {
     }
     return (float)(octave * 12 + closest_note);
 }
-
 
 // =========================================================
 // CONSTRUCTOR DEL EDITOR
@@ -133,7 +133,7 @@ OrbitaLPGAudioProcessorEditor::OrbitaLPGAudioProcessorEditor(OrbitaLPGAudioProce
     mAtt[4] = std::make_unique<SldAtt>(audioProcessor.apvts, "chaos",        mChaosSld);
     gScaleAtt = std::make_unique<CmbAtt>(audioProcessor.apvts, "global_scale", globalScaleCombo);
 
-    // NUEVO: Refrescar faders cuando se cambia de escala global
+    // Refrescar faders de pitch al cambiar escala global
     globalScaleCombo.onChange = [this]() {
         for (int t = 0; t < 6; ++t) {
             vSliders[t][0].slider.updateText();
@@ -195,29 +195,37 @@ OrbitaLPGAudioProcessorEditor::OrbitaLPGAudioProcessorEditor(OrbitaLPGAudioProce
     btn(copyNextBtn,juce::Colour(30,35,42), juce::Colours::white);
 
     // =========================================================================
-    // BOTONES "NOTE / HZ"
+    // CONFIGURACIÓN DE LOS 6 BOTONES NOTE/Hz (CONECTADOS CORRECTAMENTE)
     // =========================================================================
     for (int t = 0; t < 6; ++t) {
-        // Leer estado inicial del parámetro
-        bool initialNoteMode = audioProcessor.apvts.getRawParameterValue("t" + juce::String(t+1) + "_notemode")->load() > 0.5f;
-        
-        noteBtns[t].setButtonText(initialNoteMode ? "NOTE" : "Hz");
         noteBtns[t].setClickingTogglesState(true);
         noteBtns[t].setColour(juce::TextButton::buttonColourId, juce::Colour(30,35,42));
         noteBtns[t].setColour(juce::TextButton::buttonOnColourId, juce::Colour(20,50,70));
         noteBtns[t].setColour(juce::TextButton::textColourOnId, juce::Colours::cyan);
+        noteBtns[t].setColour(juce::TextButton::textColourOffId, juce::Colours::white);
         
-        // Al hacer click, cambia texto y refresca el fader
-        noteBtns[t].onClick = [this, t]() {
+        // Vincular con APVTS vía ButtonAttachment
+        nAtt[t] = std::make_unique<BtnAtt>(audioProcessor.apvts, "t" + juce::String(t+1) + "_notemode", noteBtns[t]);
+
+        // Lambda para alternar texto y cambiar intervalo del slider de Pitch de la pista t
+        auto updateButtonState = [this, t]() {
             bool noteMode = noteBtns[t].getToggleState();
             noteBtns[t].setButtonText(noteMode ? "NOTE" : "Hz");
-            vSliders[t][0].slider.updateText(); 
+            
+            auto& pitchSld = vSliders[t][0].slider;
+            if (noteMode) {
+                pitchSld.setInterval(1.0); // Salto en semitonos exactos de la escala
+            } else {
+                pitchSld.setInterval(0.01); // Continuo libre en Hz
+            }
+            pitchSld.updateText();
         };
+
+        noteBtns[t].onClick = updateButtonState;
+        updateButtonState();
         
+        noteBtns[t].setVisible(t == currentTrack);
         addChildComponent(noteBtns[t]);
-        
-        nAtt[t] = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(
-            audioProcessor.apvts, "t" + juce::String(t+1) + "_notemode", noteBtns[t]);
     }
 
     juce::String sNames[] = {"PITCH","P.DRP","MRPH","FOLD","FM","RISE","FALL","RESP","BRGT","VOL"};
@@ -237,20 +245,18 @@ OrbitaLPGAudioProcessorEditor::OrbitaLPGAudioProcessorEditor(OrbitaLPGAudioProce
             vSliders[t][i].slider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 36, 13);
             
             // =================================================================
-            // FORMATEO VISUAL DEL PITCH (CUANTIZACIÓN EN TIEMPO REAL)
+            // FORMATEO VISUAL ESTRICTO DE LA ESCALA (SOLO NOTAS DE LA ESCALA)
             // =================================================================
             if (i == 0) {
                 vSliders[t][i].slider.textFromValueFunction = [this, t](double value) {
                     if (noteBtns[t].getToggleState()) {
-                        // Modo Nota: Obtener escala, cuantizar visualmente y mostrar C4, D#3, etc.
                         int current_scale = (int)audioProcessor.apvts.getRawParameterValue("global_scale")->load();
-                        int quantized_midi = (int)quantize_pitch_ui(value, current_scale);
+                        int quantized_midi = (int)quantize_pitch_ui((float)value, current_scale);
                         
                         juce::String notes[] = {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
                         int octave = (quantized_midi / 12) - 1;
                         return notes[quantized_midi % 12] + juce::String(octave);
                     } else {
-                        // Modo Libre: Mostrar Frecuencia real en Hz
                         float hz = 440.0f * std::pow(2.0f, (value - 69.0f) / 12.0f);
                         return juce::String(hz, 1) + " Hz";
                     }
@@ -294,7 +300,7 @@ void OrbitaLPGAudioProcessorEditor::selectTrack(int t) {
         stepsSld[i].setVisible(sel);
         pulsesSld[i].setVisible(sel);
         offsetSld[i].setVisible(sel);
-        noteBtns[i].setVisible(sel); 
+        noteBtns[i].setVisible(sel); // Oculta o muestra el botón NOTE/Hz de la pista seleccionada
         
         for (int j = 0; j < 10; ++j) {
             vSliders[i][j].slider.setVisible(sel);

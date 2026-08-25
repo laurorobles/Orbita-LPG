@@ -74,7 +74,6 @@ public:
     }
 };
 
-
 class OrbitaLPGAudioProcessorEditor : public juce::AudioProcessorEditor, private juce::Timer {
 public:
     OrbitaLPGAudioProcessorEditor(OrbitaLPGAudioProcessor&);
