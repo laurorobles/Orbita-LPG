@@ -1,6 +1,9 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
+// =========================================================
+// HELPER: Generador Euclideano
+// =========================================================
 static std::vector<int> gen_euclid(int pulses, int steps, int offset) {
     std::vector<int> pat(steps, 0);
     if (steps == 0) return pat;
@@ -13,6 +16,47 @@ static std::vector<int> gen_euclid(int pulses, int steps, int offset) {
     return pat;
 }
 
+// =========================================================
+// HELPER: Escalas para la interfaz gráfica (UI Quantizer)
+// =========================================================
+static const std::vector<std::vector<int>> SCALES_UI = {
+    {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}, // Chromatic
+    {0, 2, 4, 5, 7, 9, 11},                 // Major
+    {0, 2, 3, 5, 7, 8, 10},                 // Minor
+    {0, 2, 3, 5, 7, 9, 10},                 // Dorian
+    {0, 1, 3, 5, 7, 8, 10},                 // Phrygian
+    {0, 2, 4, 6, 7, 9, 11},                 // Lydian
+    {0, 2, 4, 5, 7, 9, 10},                 // Mixolydian
+    {0, 2, 4, 7, 9},                        // Pentatonic Major
+    {0, 3, 5, 7, 10},                       // Pentatonic Minor
+    {0, 2, 3, 5, 7, 8, 11}                  // Harmonic Minor
+};
+
+static float quantize_pitch_ui(float raw_midi, int scale_idx) {
+    if (scale_idx < 1) scale_idx = 1;
+    if (scale_idx > 10) scale_idx = 10;
+    const auto& scale = SCALES_UI[scale_idx - 1];
+
+    int midi_int = (int)std::round(raw_midi);
+    int octave = midi_int / 12;
+    int note = midi_int % 12;
+
+    int closest_note = scale[0];
+    int min_dist = 100;
+    for (int s : scale) {
+        int dist = std::abs(note - s);
+        if (dist < min_dist) {
+            min_dist = dist;
+            closest_note = s;
+        }
+    }
+    return (float)(octave * 12 + closest_note);
+}
+
+
+// =========================================================
+// CONSTRUCTOR DEL EDITOR
+// =========================================================
 OrbitaLPGAudioProcessorEditor::OrbitaLPGAudioProcessorEditor(OrbitaLPGAudioProcessor& p)
     : AudioProcessorEditor(&p), audioProcessor(p)
 {
@@ -89,6 +133,13 @@ OrbitaLPGAudioProcessorEditor::OrbitaLPGAudioProcessorEditor(OrbitaLPGAudioProce
     mAtt[4] = std::make_unique<SldAtt>(audioProcessor.apvts, "chaos",        mChaosSld);
     gScaleAtt = std::make_unique<CmbAtt>(audioProcessor.apvts, "global_scale", globalScaleCombo);
 
+    // NUEVO: Refrescar faders cuando se cambia de escala global
+    globalScaleCombo.onChange = [this]() {
+        for (int t = 0; t < 6; ++t) {
+            vSliders[t][0].slider.updateText();
+        }
+    };
+
     for (int i = 0; i < 6; ++i) {
         tBtns[i].setButtonText("T" + juce::String(i+1));
         btn(tBtns[i], juce::Colour(22,28,35), juce::Colours::white);
@@ -143,15 +194,23 @@ OrbitaLPGAudioProcessorEditor::OrbitaLPGAudioProcessorEditor(OrbitaLPGAudioProce
     btn(copyLastBtn,juce::Colour(30,35,42), juce::Colours::white);
     btn(copyNextBtn,juce::Colour(30,35,42), juce::Colours::white);
 
-    // Matriz botones "Note Mode" mapeados a los parámetros booleanos
+    // =========================================================================
+    // BOTONES "NOTE / HZ"
+    // =========================================================================
     for (int t = 0; t < 6; ++t) {
-        noteBtns[t].setButtonText("NOTE");
+        // Leer estado inicial del parámetro
+        bool initialNoteMode = audioProcessor.apvts.getRawParameterValue("t" + juce::String(t+1) + "_notemode")->load() > 0.5f;
+        
+        noteBtns[t].setButtonText(initialNoteMode ? "NOTE" : "Hz");
         noteBtns[t].setClickingTogglesState(true);
         noteBtns[t].setColour(juce::TextButton::buttonColourId, juce::Colour(30,35,42));
         noteBtns[t].setColour(juce::TextButton::buttonOnColourId, juce::Colour(20,50,70));
         noteBtns[t].setColour(juce::TextButton::textColourOnId, juce::Colours::cyan);
         
+        // Al hacer click, cambia texto y refresca el fader
         noteBtns[t].onClick = [this, t]() {
+            bool noteMode = noteBtns[t].getToggleState();
+            noteBtns[t].setButtonText(noteMode ? "NOTE" : "Hz");
             vSliders[t][0].slider.updateText(); 
         };
         
@@ -177,14 +236,21 @@ OrbitaLPGAudioProcessorEditor::OrbitaLPGAudioProcessorEditor(OrbitaLPGAudioProce
             vSliders[t][i].slider.setSliderStyle(juce::Slider::LinearVertical);
             vSliders[t][i].slider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 36, 13);
             
-            if (i == 0) { // PITCH Formatter
+            // =================================================================
+            // FORMATEO VISUAL DEL PITCH (CUANTIZACIÓN EN TIEMPO REAL)
+            // =================================================================
+            if (i == 0) {
                 vSliders[t][i].slider.textFromValueFunction = [this, t](double value) {
                     if (noteBtns[t].getToggleState()) {
-                        int midiNote = (int)std::round(value);
+                        // Modo Nota: Obtener escala, cuantizar visualmente y mostrar C4, D#3, etc.
+                        int current_scale = (int)audioProcessor.apvts.getRawParameterValue("global_scale")->load();
+                        int quantized_midi = (int)quantize_pitch_ui(value, current_scale);
+                        
                         juce::String notes[] = {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
-                        int octave = (midiNote / 12) - 1;
-                        return notes[midiNote % 12] + juce::String(octave);
+                        int octave = (quantized_midi / 12) - 1;
+                        return notes[quantized_midi % 12] + juce::String(octave);
                     } else {
+                        // Modo Libre: Mostrar Frecuencia real en Hz
                         float hz = 440.0f * std::pow(2.0f, (value - 69.0f) / 12.0f);
                         return juce::String(hz, 1) + " Hz";
                     }
