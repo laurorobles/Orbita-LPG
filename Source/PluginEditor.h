@@ -2,7 +2,6 @@
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
 
-// [OrbitaLookAndFeel, UIControl, TrackButton clases se mantienen igual que en tu Source 1]
 class OrbitaLookAndFeel : public juce::LookAndFeel_V4 {
 public:
     juce::Font getLabelFont(juce::Label& label) override {
@@ -113,7 +112,7 @@ private:
 
     juce::TextButton mode281[3], mode292[3];
     juce::TextButton sRandBtn{"RAND"}, sResetBtn{"RESET"}, copyLastBtn{"COPY TO LAST"}, copyNextBtn{"COPY TO NEXT"};
-    juce::TextButton noteBtns[6]; // Modificado
+    juce::TextButton noteBtns[6]; 
     juce::Label mode281Lbl, mode292Lbl;
     UIControl vSliders[6][10]; 
 
@@ -132,7 +131,7 @@ private:
     
     std::unique_ptr<SldAtt> rAtt[6][3];
     std::unique_ptr<SldAtt> sAtt[6][10];
-    std::unique_ptr<BtnAtt> nAtt[6]; // Nuevo attachment para Note Mode
+    std::unique_ptr<BtnAtt> nAtt[6]; 
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(OrbitaLPGAudioProcessorEditor)
 };

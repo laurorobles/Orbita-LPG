@@ -39,7 +39,7 @@ static float quantize_pitch(float raw_midi, int scale_idx) {
 static float mtof(float midi) { return 440.0f * std::pow(2.0f, (midi - 69.0f) / 12.0f); }
 
 float WestCoastVoice::process(float& outL, float& outR, const TrackParams& params, float chaos_val, int global_scale) {
-    if (!params.pitch) return 0.0f; // Salvavidas
+    if (!params.pitch) return 0.0f; 
     
     float pitch = params.pitch->load();
     float drop = params.drop->load();
@@ -49,7 +49,7 @@ float WestCoastVoice::process(float& outL, float& outR, const TrackParams& param
     float rise = params.rise->load();
     float fall = params.fall->load();
     float resp = params.resp->load();
-    float brgt = params.brgt->load(); // Actualmente sin filtro implementado, se usa como VCA
+    float brgt = params.brgt->load(); 
     float noise = params.noise->load();
     float vol = params.vol->load();
     bool note_mode = params.notemode->load() > 0.5f;
@@ -65,7 +65,6 @@ float WestCoastVoice::process(float& outL, float& outR, const TrackParams& param
         if (env <= 0.0f) { env = 0.0f; env_stage = 0; }
     }
 
-    // Cuantizar solo si está en modo nota
     float current_pitch = note_mode ? quantize_pitch(pitch, global_scale) : pitch;
     float freq = mtof(current_pitch);
     
@@ -154,7 +153,6 @@ juce::AudioProcessorValueTreeState::ParameterLayout OrbitaLPGAudioProcessor::cre
         layout.add(std::make_unique<juce::AudioParameterFloat>("t"+t+"_noise", "T"+t+" Noise", 0.0f, 1.0f, 0.0f));
         layout.add(std::make_unique<juce::AudioParameterFloat>("t"+t+"_vol", "T"+t+" Vol", 0.0f, 1.0f, 0.8f));
         
-        // Nuevo parámetro de Note Mode
         layout.add(std::make_unique<juce::AudioParameterBool>("t"+t+"_notemode", "T"+t+" Note Mode", true));
     }
     
@@ -166,7 +164,6 @@ OrbitaLPGAudioProcessor::OrbitaLPGAudioProcessor()
        apvts(*this, nullptr, "PARAMETERS", createParameterLayout()),
        oversampler(2, 1, juce::dsp::Oversampling<float>::filterHalfBandPolyphaseIIR, true)
 {
-    // CACHEO DE PARÁMETROS PARA EVITAR BUSQUEDAS EN EL HILO DE AUDIO
     for(int i=0; i<6; ++i) {
         juce::String t = juce::String(i+1);
         tParams[i].steps = apvts.getRawParameterValue("t"+t+"_steps");
@@ -249,7 +246,6 @@ void OrbitaLPGAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juc
                     if (steps > 0) {
                         voices[t].current_step = (voices[t].current_step + 1) % steps;
                         
-                        // Array estático (Reemplazo del std::vector para evitar reservar memoria aquí)
                         int pat[32] = {0}; 
                         if (pulses >= steps) { 
                             for(int i=0; i<steps && i<32; i++) pat[i] = 1;

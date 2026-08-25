@@ -142,7 +142,7 @@ OrbitaLPGAudioProcessorEditor::OrbitaLPGAudioProcessorEditor(OrbitaLPGAudioProce
     btn(sRandBtn,   juce::Colour(30,35,42), juce::Colours::white);
     btn(copyLastBtn,juce::Colour(30,35,42), juce::Colours::white);
     btn(copyNextBtn,juce::Colour(30,35,42), juce::Colours::white);
-    
+
     // Matriz botones "Note Mode" mapeados a los parámetros booleanos
     for (int t = 0; t < 6; ++t) {
         noteBtns[t].setButtonText("NOTE");
@@ -150,6 +150,11 @@ OrbitaLPGAudioProcessorEditor::OrbitaLPGAudioProcessorEditor(OrbitaLPGAudioProce
         noteBtns[t].setColour(juce::TextButton::buttonColourId, juce::Colour(30,35,42));
         noteBtns[t].setColour(juce::TextButton::buttonOnColourId, juce::Colour(20,50,70));
         noteBtns[t].setColour(juce::TextButton::textColourOnId, juce::Colours::cyan);
+        
+        noteBtns[t].onClick = [this, t]() {
+            vSliders[t][0].slider.updateText(); 
+        };
+        
         addChildComponent(noteBtns[t]);
         
         nAtt[t] = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(
@@ -160,6 +165,7 @@ OrbitaLPGAudioProcessorEditor::OrbitaLPGAudioProcessorEditor(OrbitaLPGAudioProce
     juce::Colour sCols[]  = {juce::Colours::white, juce::Colours::white, juce::Colours::white,
                               juce::Colours::white, juce::Colours::white, juce::Colour(80,200,100),
                               juce::Colour(80,200,100), juce::Colours::cyan, juce::Colours::cyan, juce::Colours::white};
+                              
     for (int t = 0; t < 6; ++t) {
         juce::String ts = "t" + juce::String(t+1) + "_";
         rAtt[t][0] = std::make_unique<SldAtt>(audioProcessor.apvts, ts+"steps",  stepsSld[t]);
@@ -170,6 +176,21 @@ OrbitaLPGAudioProcessorEditor::OrbitaLPGAudioProcessorEditor(OrbitaLPGAudioProce
         for (int i = 0; i < 10; ++i) {
             vSliders[t][i].slider.setSliderStyle(juce::Slider::LinearVertical);
             vSliders[t][i].slider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 36, 13);
+            
+            if (i == 0) { // PITCH Formatter
+                vSliders[t][i].slider.textFromValueFunction = [this, t](double value) {
+                    if (noteBtns[t].getToggleState()) {
+                        int midiNote = (int)std::round(value);
+                        juce::String notes[] = {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
+                        int octave = (midiNote / 12) - 1;
+                        return notes[midiNote % 12] + juce::String(octave);
+                    } else {
+                        float hz = 440.0f * std::pow(2.0f, (value - 69.0f) / 12.0f);
+                        return juce::String(hz, 1) + " Hz";
+                    }
+                };
+            }
+
             addChildComponent(vSliders[t][i].slider);
             if (t == 0) lbl(vSliders[0][i].label, sNames[i].toRawUTF8(), sCols[i]);
             sAtt[t][i] = std::make_unique<SldAtt>(audioProcessor.apvts, ts+sIds[i], vSliders[t][i].slider);
@@ -207,7 +228,7 @@ void OrbitaLPGAudioProcessorEditor::selectTrack(int t) {
         stepsSld[i].setVisible(sel);
         pulsesSld[i].setVisible(sel);
         offsetSld[i].setVisible(sel);
-        noteBtns[i].setVisible(sel); // Controla la visibilidad
+        noteBtns[i].setVisible(sel); 
         
         for (int j = 0; j < 10; ++j) {
             vSliders[i][j].slider.setVisible(sel);
@@ -315,7 +336,6 @@ void OrbitaLPGAudioProcessorEditor::resized() {
 
         auto sRow1 = si.removeFromTop(20);
         
-        // Pone los 6 botones the NOTE en la misma coordenada visualmente 
         auto noteRect = sRow1.removeFromRight(70).reduced(0,1);
         for(int t=0; t<6; ++t) noteBtns[t].setBounds(noteRect);
         

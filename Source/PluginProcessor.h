@@ -16,7 +16,7 @@ struct TrackParams {
     std::atomic<float>* brgt;
     std::atomic<float>* noise;
     std::atomic<float>* vol;
-    std::atomic<float>* notemode; // Nuevo parámetro para el Modo Nota
+    std::atomic<float>* notemode; 
 };
 
 class OrbitaLPGAudioProcessor;
@@ -67,7 +67,6 @@ public:
 
     juce::AudioProcessorValueTreeState apvts;
     
-    // Punteros Cacheados para optimización extrema DSP
     std::atomic<float>* p_master_vol = nullptr;
     std::atomic<float>* p_bpm = nullptr;
     std::atomic<float>* p_is_playing = nullptr;
@@ -81,14 +80,12 @@ public:
     
     TrackParams tParams[6];
     
-    // Playback
     bool isPlaying = false;
     bool seqEnabled = true;
     int step_samples_counter = 0;
     bool trackMutes[6] = {false};
     WestCoastVoice voices[6];
 
-    // Delay
     juce::dsp::DelayLine<float, juce::dsp::DelayLineInterpolationTypes::Lagrange3rd> delayL{48000 * 2};
     juce::dsp::DelayLine<float, juce::dsp::DelayLineInterpolationTypes::Lagrange3rd> delayR{48000 * 2};
     juce::dsp::Oversampling<float> oversampler;
