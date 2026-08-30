@@ -47,7 +47,7 @@ jobs:
 
       - name: Setup Ninja (Mac/Win)
         if: runner.os != 'Linux'
-        uses: ashley-taylor/setup-ninja@v1.0.0
+        uses: seanmiddleditch/gha-setup-ninja@master
 
       - name: Configure CMake
         run: |
@@ -64,27 +64,27 @@ jobs:
           
           # VST3
           for path in "build/OrbitaLPG_artefacts/VST3/Orbita-LPG.vst3" "build/OrbitaLPG_artefacts/Release/VST3/Orbita-LPG.vst3" "build/OrbitaLPG_artefacts/VST3/Extasis *.vst3" "build/OrbitaLPG_artefacts/Release/VST3/Extasis *.vst3"; do
-            if [ -d "$path" ]; then cp -r "$path" artifacts/; fi
+            if [ -e "$path" ]; then cp -r "$path" artifacts/; fi
           done
           
           # AU
           for path in "build/OrbitaLPG_artefacts/AU/Orbita-LPG.component" "build/OrbitaLPG_artefacts/Release/AU/Orbita-LPG.component"; do
-            if [ -d "$path" ]; then cp -r "$path" artifacts/; fi
+            if [ -e "$path" ]; then cp -r "$path" artifacts/; fi
           done
           
           # CLAP
           for path in "build/OrbitaLPG_artefacts/CLAP/Orbita-LPG.clap" "build/OrbitaLPG_artefacts/Release/CLAP/Orbita-LPG.clap"; do
-            if [ -f "$path" ]; then cp "$path" artifacts/; fi
+            if [ -e "$path" ]; then cp -r "$path" artifacts/; fi
           done
           
           # Standalone Win
           for path in "build/OrbitaLPG_artefacts/Standalone/Orbita-LPG.exe" "build/OrbitaLPG_artefacts/Release/Standalone/Orbita-LPG.exe"; do
-            if [ -f "$path" ]; then cp "$path" artifacts/; fi
+            if [ -e "$path" ]; then cp -r "$path" artifacts/; fi
           done
           
           # Standalone Mac
           for path in "build/OrbitaLPG_artefacts/Standalone/Orbita-LPG.app" "build/OrbitaLPG_artefacts/Release/Standalone/Orbita-LPG.app"; do
-            if [ -d "$path" ]; then cp -r "$path" artifacts/; fi
+            if [ -e "$path" ]; then cp -r "$path" artifacts/; fi
           done
           
           # Docs & Installer
