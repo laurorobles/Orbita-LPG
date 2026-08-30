@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(OrbitaLPG VERSION 0.1.0)
+project(OrbitaLPG VERSION 1.0.0)
 
 # Fetch JUCE
 include(FetchContent)
