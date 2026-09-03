@@ -19,7 +19,7 @@ juce_add_plugin(OrbitaLPG
     COPY_PLUGIN_AFTER_BUILD TRUE
     PLUGIN_MANUFACTURER_CODE ExtR
     PLUGIN_CODE OrbL
-    FORMATS VST3 AU Standalone
+    FORMATS VST3 AU Standalone CLAP
     PRODUCT_NAME "Orbita-LPG")
 
 target_sources(OrbitaLPG PRIVATE
