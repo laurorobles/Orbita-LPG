@@ -78,7 +78,7 @@ private:
     juce::TooltipWindow tooltipWindow{ this, 700 };
     int currentTrack = 0; bool trackMutes[6] = {false};
 
-    juce::Label titleLabel;
+    juce::Label titleLabel, creditLabel;
     juce::ComboBox kitCombo;
     juce::TextButton playBtn{"PLAY"}, stopBtn{"STOP"}, seqBtn{"SEQ: ON"}, configBtn{"CONFIG"}; 
     juce::Slider mVolSld, mDriveSld, mBpmSld, mSwingSld, mChaosSld;

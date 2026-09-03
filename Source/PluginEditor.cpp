@@ -304,6 +304,10 @@ OrbitaLPGAudioProcessorEditor::OrbitaLPGAudioProcessorEditor(OrbitaLPGAudioProce
     titleLabel.setText("ORBITA-LPG   ///   6-VOICE MATRIX", juce::dontSendNotification);
     titleLabel.setFont(juce::FontOptions(11.0f, juce::Font::bold)); titleLabel.setColour(juce::Label::textColourId, juce::Colour(200,210,220)); addAndMakeVisible(titleLabel);
 
+    creditLabel.setText("coded by @laurorobles / extasis records", juce::dontSendNotification);
+    creditLabel.setFont(juce::FontOptions(9.0f)); creditLabel.setColour(juce::Label::textColourId, juce::Colours::white.withAlpha(0.2f));
+    creditLabel.setJustificationType(juce::Justification::bottomRight); addAndMakeVisible(creditLabel);
+
     addAndMakeVisible(kitCombo);
     for (int i = 0; i < MASTER_KITS.size(); ++i) kitCombo.addItem(MASTER_KITS[i].name, i + 1);
     kitCombo.setSelectedItemIndex(1, juce::dontSendNotification); 
@@ -705,6 +709,8 @@ void OrbitaLPGAudioProcessorEditor::resized() {
             echoKnobs[i].slider.setBounds(kb); echoKnobs[i].label.setBounds(kb.getX()-8, kb.getY()-14, kb.getWidth()+16, 12);
         }
     }
+    
+    creditLabel.setBounds(getWidth() - 215, getHeight() - 18, 210, 15);
 }
 
 void OrbitaLPGAudioProcessorEditor::paint(juce::Graphics& g) {
