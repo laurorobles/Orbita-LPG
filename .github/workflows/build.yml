@@ -21,7 +21,7 @@ jobs:
             artifact_name: Windows-Build
             cmake_args: -DCMAKE_BUILD_TYPE=Release -DJUCE_COPY_PLUGIN_AFTER_BUILD=FALSE
           - name: macOS (Universal)
-            os: macos-latest
+            os: macos-13
             artifact_name: macOS-Build
             cmake_args: -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DJUCE_COPY_PLUGIN_AFTER_BUILD=FALSE
           - name: Linux (x64)
