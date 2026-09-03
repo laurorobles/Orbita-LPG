@@ -98,6 +98,7 @@ public:
     
     TrackParams tParams[6];
     bool isPlaying = false;
+    double internal_ppq = 0.0;
     bool seqEnabled = true;
     
     float track_samples_counter[6] = {0.0f}; 

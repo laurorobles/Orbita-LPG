@@ -213,17 +213,20 @@ void OrbitaLPGAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juc
     juce::ScopedNoDenormals noDenormals; buffer.clear();
     auto* playhead = getPlayHead(); 
     
-    bool is_playing = this->isPlaying;
+    bool host_is_playing = false;
+    double host_ppq = -1.0;
     float bpm = p_bpm ? p_bpm->load() : 124.0f;
     
-    // NUEVO CÓDIGO MODERNIZADO DE JUCE 7/8
     if (playhead != nullptr) {
         if (auto pos = playhead->getPosition()) {
-            is_playing = is_playing || pos->getIsPlaying();
-            if (auto hostBpm = pos->getBpm()) {
-                bpm = (float)*hostBpm;
-            }
+            host_is_playing = pos->getIsPlaying();
+            if (auto hostBpm = pos->getBpm()) bpm = (float)*hostBpm;
+            if (auto hostPpq = pos->getPpqPosition()) host_ppq = *hostPpq;
         }
+    }
+    
+    if (host_is_playing && host_ppq >= 0.0) {
+        internal_ppq = host_ppq;
     }
     
     float chaos = p_chaos ? p_chaos->load() : 0.0f;
@@ -231,6 +234,7 @@ void OrbitaLPGAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juc
     int g_root = p_global_root ? (int)p_global_root->load() : 0;
     double sr = getSampleRate();
     float beat_samples = (sr * 60.0f) / bpm;
+    double ppq_per_sample = 1.0 / (double)beat_samples;
     
     for (const auto metadata : midiMessages) {
         auto msg = metadata.getMessage();
@@ -267,22 +271,21 @@ void OrbitaLPGAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juc
     midiMessages.clear(); 
     
     for (int sample = 0; sample < buffer.getNumSamples(); ++sample) {
-        if (is_playing && seqEnabled) {
+        if ((host_is_playing || this->isPlaying) && seqEnabled) {
             for(int t=0; t<6; ++t) {
                 static const float DIVISORS[4] = {1.0f, 0.5f, 0.25f, 0.125f};
                 float divisor = DIVISORS[(int)tParams[t].rate->load() & 3];
                 
-                float samples_per_step = beat_samples * divisor;
-                track_samples_counter[t] += 1.0f;
-
-                if (track_samples_counter[t] >= samples_per_step) {
-                    track_samples_counter[t] -= samples_per_step;
-                    
+                double absolute_step = internal_ppq / (double)divisor;
+                double previous_step = (internal_ppq - ppq_per_sample) / (double)divisor;
+                
+                if (std::floor(absolute_step) > std::floor(previous_step)) {
                     int steps = (int)tParams[t].steps->load();
                     int pulses = (int)tParams[t].pulses->load();
                     int offset = (int)tParams[t].offset->load();
                     
-                    voices[t].current_step = (voices[t].current_step + 1) % steps;
+                    voices[t].current_step = ((long long)std::floor(absolute_step)) % steps;
+                    if (voices[t].current_step < 0) voices[t].current_step += steps;
                     
                     bool trigger_hit = false;
                     if (pulses >= steps) trigger_hit = true;
@@ -295,10 +298,14 @@ void OrbitaLPGAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juc
                         float raw_p = tParams[t].pitch->load();
                         bool note_mode = tParams[t].notemode->load() > 0.5f;
                         float q_pitch = note_mode ? quantize_pitch(raw_p, g_scale, g_root) : raw_p;
-                        voices[t].trigger(q_pitch, tParams[t].drop->load(), chaos, samples_per_step * 0.5f);
+                        voices[t].trigger(q_pitch, tParams[t].drop->load(), chaos, beat_samples * divisor * 0.5f);
                     }
                 }
             }
+        }
+        
+        if (host_is_playing || this->isPlaying) {
+            internal_ppq += ppq_per_sample;
         }
 
         float masterL = 0.0f, masterR = 0.0f;
@@ -345,5 +352,16 @@ void OrbitaLPGAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juc
 
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter() { return new OrbitaLPGAudioProcessor(); }
 juce::AudioProcessorEditor* OrbitaLPGAudioProcessor::createEditor() { return new OrbitaLPGAudioProcessorEditor(*this); }
-void OrbitaLPGAudioProcessor::getStateInformation(juce::MemoryBlock& destData) {}
-void OrbitaLPGAudioProcessor::setStateInformation(const void* data, int sizeInBytes) {}
+void OrbitaLPGAudioProcessor::getStateInformation(juce::MemoryBlock& destData) {
+    auto state = apvts.copyState();
+    std::unique_ptr<juce::XmlElement> xml(state.createXml());
+    if (xml != nullptr) copyXmlToBinary(*xml, destData);
+}
+void OrbitaLPGAudioProcessor::setStateInformation(const void* data, int sizeInBytes) {
+    std::unique_ptr<juce::XmlElement> xmlState(getXmlFromBinary(data, sizeInBytes));
+    if (xmlState != nullptr) {
+        if (xmlState->hasTagName(apvts.state.getType())) {
+            apvts.replaceState(juce::ValueTree::fromXml(*xmlState));
+        }
+    }
+}
