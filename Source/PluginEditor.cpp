@@ -646,7 +646,27 @@ void OrbitaLPGAudioProcessorEditor::toggleMute(int t) {
 }
 
 bool OrbitaLPGAudioProcessorEditor::keyPressed(const juce::KeyPress& key) { if (key.isKeyCode(juce::KeyPress::spaceKey)) { playBtn.triggerClick(); return true; } return false; }
-void OrbitaLPGAudioProcessorEditor::timerCallback() { repaint(radarArea); }
+void OrbitaLPGAudioProcessorEditor::updateLicenseState() {
+    isActivated = LicenseManager::isLicensed();
+    if (isActivated) {
+        licenseBadgeButton.setVisible(false);
+        audioProcessor.demoExpired.store(false);
+        audioProcessor.demoSampleCount = 0;
+    } else {
+        licenseBadgeButton.setVisible(true);
+        if (audioProcessor.demoExpired.load()) {
+            activationOverlay.isExpired = true;
+            activationOverlay.setVisible(true);
+        } else if (!activationOverlay.isVisible() && audioProcessor.demoSampleCount == 0) {
+            activationOverlay.setVisible(true);
+        }
+    }
+}
+
+void OrbitaLPGAudioProcessorEditor::timerCallback() {
+    if (!isActivated && audioProcessor.demoExpired.load() && !activationOverlay.isVisible()) {
+        updateLicenseState();
+    } repaint(radarArea); }
 
 void OrbitaLPGAudioProcessorEditor::resized() {
     auto b = getLocalBounds().reduced(12);
@@ -664,6 +684,10 @@ void OrbitaLPGAudioProcessorEditor::resized() {
         stopBtn.setBounds(r.removeFromLeft(50).reduced(0,2)); r.removeFromLeft(5); 
         seqBtn.setBounds( r.removeFromLeft(60).reduced(0,2)); r.removeFromLeft(5); 
         configBtn.setBounds(r.removeFromRight(75).reduced(0,2));
+        
+        licenseBadgeButton.setBounds(r.removeFromRight(80).reduced(0,2)); r.removeFromRight(10);
+        
+        activationOverlay.setBounds(getLocalBounds());
     }
     {
         auto ra = radarArea; auto controlZone = ra.removeFromBottom(110); controlZone.reduce(8, 6);

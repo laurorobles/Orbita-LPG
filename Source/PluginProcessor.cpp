@@ -1,4 +1,5 @@
 #include "PluginProcessor.h"
+#include "LicenseManager.h"
 #include "PluginEditor.h"
 #include <cmath>
 
@@ -203,6 +204,10 @@ juce::AudioProcessorValueTreeState::ParameterLayout OrbitaLPGAudioProcessor::cre
 
 OrbitaLPGAudioProcessor::~OrbitaLPGAudioProcessor() {}
 void OrbitaLPGAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock) {
+    if (LicenseManager::isLicensed()) {
+        demoExpired.store(false);
+        demoSampleCount = 0;
+    }
     for (int i = 0; i < 6; i++) voices[i].prepare(sampleRate);
     juce::dsp::ProcessSpec spec { sampleRate, (juce::uint32)samplesPerBlock, 2 };
     delayL.prepare(spec); delayR.prepare(spec);

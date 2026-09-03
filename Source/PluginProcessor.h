@@ -111,6 +111,8 @@ public:
     juce::dsp::DelayLine<float, juce::dsp::DelayLineInterpolationTypes::Lagrange3rd> delayL{96000};
     juce::dsp::DelayLine<float, juce::dsp::DelayLineInterpolationTypes::Lagrange3rd> delayR{96000};
     float lfo_phase = 0.0f;
+    std::atomic<bool> demoExpired{false};
+    int demoSampleCount = 0;
 
 private:
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();

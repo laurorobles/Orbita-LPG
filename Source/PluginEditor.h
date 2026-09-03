@@ -1,6 +1,8 @@
 #pragma once
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
+#include "UIComponents.h"
+#include "LicenseManager.h"
 
 class OrbitaLookAndFeel : public juce::LookAndFeel_V4 {
 public:
@@ -83,6 +85,12 @@ private:
     juce::TextButton playBtn{"PLAY"}, stopBtn{"STOP"}, seqBtn{"SEQ: ON"}, configBtn{"CONFIG"};
     juce::TextButton loadBtn{"LOAD"}, saveBtn{"SAVE"};
     std::unique_ptr<juce::FileChooser> chooser; 
+    
+    // License
+    ActivationOverlayComponent activationOverlay;
+    juce::TextButton licenseBadgeButton{"ACTIVATE"};
+    bool isActivated = false;
+    void updateLicenseState();
     juce::Slider mVolSld, mDriveSld, mBpmSld, mSwingSld, mChaosSld;
     juce::Label mVolLbl, mDriveLbl, mBpmLbl, mSwingLbl, mChaosLbl, mScaleLbl, mRootLbl;
     juce::ComboBox globalScaleCombo, globalRootCombo;
