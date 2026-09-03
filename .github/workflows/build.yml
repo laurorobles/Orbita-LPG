@@ -20,10 +20,6 @@ jobs:
             os: windows-latest
             artifact_name: Windows-Build
             cmake_args: -DCMAKE_BUILD_TYPE=Release -DJUCE_COPY_PLUGIN_AFTER_BUILD=FALSE
-          - name: macOS (Universal)
-            os: macos-14
-            artifact_name: macOS-Build
-            cmake_args: -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DJUCE_COPY_PLUGIN_AFTER_BUILD=FALSE
           - name: Linux (x64)
             os: ubuntu-latest
             artifact_name: Linux-Build
@@ -120,12 +116,6 @@ jobs:
           name: Windows-Build
           path: release-files/Windows/
 
-      - name: Download macOS Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: macOS-Build
-          path: release-files/macOS/
-
       - name: Download Linux Artifacts
         uses: actions/download-artifact@v4
         with:
@@ -137,7 +127,6 @@ jobs:
           mkdir final-assets
           cd release-files
           zip -r ../final-assets/Orbita-LPG-Windows.zip Windows/
-          zip -r ../final-assets/Orbita-LPG-macOS.zip macOS/
           zip -r ../final-assets/Orbita-LPG-Linux.zip Linux/
           cd ..
 
