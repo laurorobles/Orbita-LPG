@@ -80,7 +80,9 @@ private:
 
     juce::Label titleLabel, creditLabel;
     juce::ComboBox kitCombo;
-    juce::TextButton playBtn{"PLAY"}, stopBtn{"STOP"}, seqBtn{"SEQ: ON"}, configBtn{"CONFIG"}; 
+    juce::TextButton playBtn{"PLAY"}, stopBtn{"STOP"}, seqBtn{"SEQ: ON"}, configBtn{"CONFIG"};
+    juce::TextButton loadBtn{"LOAD"}, saveBtn{"SAVE"};
+    std::unique_ptr<juce::FileChooser> chooser; 
     juce::Slider mVolSld, mDriveSld, mBpmSld, mSwingSld, mChaosSld;
     juce::Label mVolLbl, mDriveLbl, mBpmLbl, mSwingLbl, mChaosLbl, mScaleLbl, mRootLbl;
     juce::ComboBox globalScaleCombo, globalRootCombo;

@@ -308,6 +308,25 @@ OrbitaLPGAudioProcessorEditor::OrbitaLPGAudioProcessorEditor(OrbitaLPGAudioProce
     creditLabel.setFont(juce::FontOptions(9.0f)); creditLabel.setColour(juce::Label::textColourId, juce::Colours::white.withAlpha(0.2f));
     creditLabel.setJustificationType(juce::Justification::bottomRight); addAndMakeVisible(creditLabel);
 
+    addAndMakeVisible(loadBtn); addAndMakeVisible(saveBtn);
+    loadBtn.setTooltip("Load a custom .xml preset"); saveBtn.setTooltip("Save current state to .xml preset");
+    loadBtn.onClick = [this]() {
+        chooser = std::make_unique<juce::FileChooser>("Load Preset", juce::File(), "*.xml");
+        chooser->launchAsync(juce::FileBrowserComponent::openMode | juce::FileBrowserComponent::canSelectFiles,
+            [this](const juce::FileChooser& fc) {
+                if (fc.getResult().existsAsFile()) {
+                    juce::XmlDocument xmlDoc(fc.getResult());
+                    if (auto xml = xmlDoc.getDocumentElement()) { audioProcessor.apvts.replaceState(juce::ValueTree::fromXml(*xml)); }
+                }
+            });
+    };
+    saveBtn.onClick = [this]() {
+        chooser = std::make_unique<juce::FileChooser>("Save Preset", juce::File(), "*.xml");
+        chooser->launchAsync(juce::FileBrowserComponent::saveMode | juce::FileBrowserComponent::canSelectFiles,
+            [this](const juce::FileChooser& fc) {
+                if (auto xml = audioProcessor.apvts.copyState().createXml()) { xml->writeTo(fc.getResult()); }
+            });
+    };
     addAndMakeVisible(kitCombo);
     for (int i = 0; i < MASTER_KITS.size(); ++i) kitCombo.addItem(MASTER_KITS[i].name, i + 1);
     kitCombo.setSelectedItemIndex(1, juce::dontSendNotification); 
@@ -637,11 +656,13 @@ void OrbitaLPGAudioProcessorEditor::resized() {
 
     {
         auto r = topArea; 
-        titleLabel.setBounds(r.removeFromLeft(160)); 
-        kitCombo.setBounds(r.removeFromLeft(180).reduced(0, 2)); r.removeFromLeft(10);
-        playBtn.setBounds(r.removeFromLeft(55).reduced(0,2)); r.removeFromLeft(5);
-        stopBtn.setBounds(r.removeFromLeft(55).reduced(0,2)); r.removeFromLeft(5); 
-        seqBtn.setBounds( r.removeFromLeft(65).reduced(0,2)); r.removeFromLeft(5); 
+        titleLabel.setBounds(r.removeFromLeft(145)); 
+        loadBtn.setBounds(r.removeFromLeft(45).reduced(0, 2)); r.removeFromLeft(2);
+        saveBtn.setBounds(r.removeFromLeft(45).reduced(0, 2)); r.removeFromLeft(5);
+        kitCombo.setBounds(r.removeFromLeft(160).reduced(0, 2)); r.removeFromLeft(10);
+        playBtn.setBounds(r.removeFromLeft(50).reduced(0,2)); r.removeFromLeft(5);
+        stopBtn.setBounds(r.removeFromLeft(50).reduced(0,2)); r.removeFromLeft(5); 
+        seqBtn.setBounds( r.removeFromLeft(60).reduced(0,2)); r.removeFromLeft(5); 
         configBtn.setBounds(r.removeFromRight(75).reduced(0,2));
     }
     {

@@ -25,6 +25,9 @@ struct TrackParams {
 
 class WestCoastVoice {
 public:
+    int active_midi_note = -1;
+    int midi_gate_samples = 0;
+    float last_fold_in = 0.0f;
     void prepare(double sampleRate) { sr = sampleRate; }
     void trigger(float target_pitch, float drop_amt, float chaos_amt, float gate_len);
     void releaseGate();

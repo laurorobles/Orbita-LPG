@@ -31,6 +31,7 @@ void WestCoastVoice::releaseGate() { if (env_stage == 3) env_stage = 2; }
 void WestCoastVoice::reset() {
     current_step = -1; env = 0.0f; env_stage = 0; gate_samples = 0.0f;
     lpg_state = 0.0f; lpf_state = 0.0f; bandpass_state = 0.0f; phase = 0.0f;
+    active_midi_note = -1; midi_gate_samples = 0; last_fold_in = 0.0f;
 }
 
 float WestCoastVoice::process(float& outL, float& outR, const TrackParams& params) {
@@ -271,6 +272,17 @@ void OrbitaLPGAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juc
     midiMessages.clear(); 
     
     for (int sample = 0; sample < buffer.getNumSamples(); ++sample) {
+        // Process pending Note Offs
+        for(int t=0; t<6; ++t) {
+            if (voices[t].midi_gate_samples > 0) {
+                voices[t].midi_gate_samples--;
+                if (voices[t].midi_gate_samples == 0 && voices[t].active_midi_note >= 0) {
+                    midiMessages.addEvent(juce::MidiMessage::noteOff(t + 1, voices[t].active_midi_note, 0.0f), sample);
+                    voices[t].active_midi_note = -1;
+                }
+            }
+        }
+        
         if ((host_is_playing || this->isPlaying) && seqEnabled) {
             for(int t=0; t<6; ++t) {
                 static const float DIVISORS[4] = {1.0f, 0.5f, 0.25f, 0.125f};
@@ -299,6 +311,14 @@ void OrbitaLPGAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juc
                         bool note_mode = tParams[t].notemode->load() > 0.5f;
                         float q_pitch = note_mode ? quantize_pitch(raw_p, g_scale, g_root) : raw_p;
                         voices[t].trigger(q_pitch, tParams[t].drop->load(), chaos, beat_samples * divisor * 0.5f);
+                        
+                        // Schedule MIDI Out Note
+                        if (voices[t].active_midi_note >= 0) {
+                            midiMessages.addEvent(juce::MidiMessage::noteOff(t + 1, voices[t].active_midi_note, 0.0f), sample);
+                        }
+                        voices[t].active_midi_note = (int)q_pitch;
+                        voices[t].midi_gate_samples = (int)((beat_samples * divisor) * 0.5f);
+                        midiMessages.addEvent(juce::MidiMessage::noteOn(t + 1, (int)q_pitch, tParams[t].vol->load()), sample);
                     }
                 }
             }
