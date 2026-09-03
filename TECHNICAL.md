@@ -16,6 +16,7 @@
 | VST3 | ✅ | ✅ | ✅ |
 | AU (AudioUnit) | ✅ | — | — |
 | Standalone | ✅ | ✅ | ✅ |
+| CLAP | ✅ | ✅ | ✅ |
 
 ## 3. Requisitos de Sistema
 | | Mínimo | Recomendado |
@@ -30,16 +31,16 @@
 ## 4. Parámetros de DSP
 | Categoría | Cantidad |
 |---|---|
-| Parámetros globales | 12 |
-| Parámetros por track (× 6) | 14 × 6 = 84 |
-| **Total de parámetros** | **96** |
+| Parámetros globales | 13 |
+| Parámetros por track (× 6) | 19 × 6 = 114 |
+| **Total de parámetros** | **127** |
 
 ## 5. I/O
 | | Cantidad |
 |---|---|
 | **Entradas de audio** | 0 (generativo) |
 | **Salidas de audio** | 1 Master Stereo + 6 Track Stereo = **7 buses estéreo** |
-| **MIDI input** | No |
+| **MIDI input** | Sí (Canal 1: Drum Machine C1-F1. Canales 1-6: Multitímbrico) |
 | **MIDI output** | No |
 
 ## 6. Motor de DSP
@@ -47,11 +48,11 @@
 |---|---|
 | Oscilador | Triangle/Square morph con FM self-feedback |
 | Wavefolder | Saturación armónica no lineal (sin(x·π/2)) |
-| LPG / Vactrol | Emulación digital de LDR fotoresistencia (exponencial retardada) |
-| Envolvente | Rise/Fall con 3 estados (idle/attack/decay) |
-| Cuantización | Snap a escala musical (10 escalas) |
-| Delay | juce::dsp::DelayLine (estéreo) con Wow LFO senoidal |
-| Sequencer | Bjorklund Euclidean (O(n) bucket algorithm) |
+| LPG / Vactrol | Emulación digital de LDR fotoresistencia (exponencial retardada) con 3 modos (VCA, LPG, VCF) |
+| Envolvente | Rise/Fall con 3 estados (Transient, Sustain, Cycle) |
+| Cuantización | Snap a escala musical y tónica global (14 escalas) con modo Hz |
+| Delay | juce::dsp::DelayLine con Interpolación Lagrange3rd, Sync BPM y Wow LFO |
+| Sequencer | Bjorklund Euclidean, Rate Divisor, Phase-Lock PPQ Host Sync |
 | Chaos | Ruido blanco multiplicativo en pitch y fold |
 
 > **Licencia:** [http://laurorobles.gumroad.com](http://laurorobles.gumroad.com)

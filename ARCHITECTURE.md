@@ -4,18 +4,26 @@
 
 ```mermaid
 graph TD
-    CLK["Clock / DAW Transport\n(BPM, Swing)"] --> SEQ
+    CLK["Clock / DAW Transport
+(BPM, Swing, Phase-Lock PPQ Sync)"] --> SEQ
 
     subgraph TRACKS["6 Tracks Independientes"]
-        SEQ["Euclidean Sequencer\n(Bjorklund O(n) Bucket)"]
-        SEQ -->|Trigger| ENV["Rise/Fall Envelope\n(3-stage: idle/attack/decay)"]
+        SEQ["Euclidean Sequencer
+(Bjorklund O(n) Bucket, Rate Divisors)"]
+        SEQ -->|Trigger| ENV["Rise/Fall Envelope
+(281 Mode: TRANS/SUST/CYCLE)"]
 
-        OSC["Triangle↔Square Oscillator\n(Morph parameter)"]
+        OSC["Triangle↔Square Oscillator
+(Morph parameter)"]
         OSC -->|FM self-feedback| OSC
-        OSC --> WF["Wavefolder\nsin(x·π/2) non-linear saturation"]
-        WF --> NZ["Noise Mix\n(white noise blend)"]
+        OSC --> WF["Wavefolder
+sin(x·π/2) non-linear saturation"]
+        WF --> NZ["Noise Mix
+(white noise blend)"]
 
-        ENV -->|LPG trigger| VACTROL["Vactrol LPG Emulation\n(exponential lag filter)\nvactrol_state += (env - state) × speed"]
+        ENV -->|LPG trigger| VACTROL["Vactrol LPG Emulation
+(292 Mode: VCA/LPG/VCF)
+vactrol_state += (env - state) × speed"]
         NZ --> VACTROL
         VACTROL --> VOL["Track Volume"]
     end
@@ -23,14 +31,20 @@ graph TD
     VOL -->|Σ 6 voices| ECHO
 
     subgraph FX["Global FX"]
-        ECHO["Space Echo\njuce::dsp::DelayLine\n+ Wow LFO (sine flutter)"]
+        ECHO["Space Echo
+juce::dsp::DelayLine
++ Lagrange3rd Intp
++ Wow LFO (sine flutter)"]
     end
 
-    ECHO --> MASTER["Master Drive + Clip\n→ Stereo Output"]
+    ECHO --> MASTER["Master Drive + Clip
+→ Stereo Output"]
 
-    CHAOS["Chaos\n(stochastic pitch/fold mod)"] -.-> OSC
+    CHAOS["Chaos
+(stochastic pitch/fold mod)"] -.-> OSC
     CHAOS -.-> WF
-    SCALE["Global Scale Quantizer\n(10 scales, snap to nearest)"] -.-> OSC
+    SCALE["Global Scale & Root Quantizer
+(14 scales, Note vs Hz Mode)"] -.-> OSC
 ```
 
 ## Algoritmo de Bjorklund (Euclidean)
