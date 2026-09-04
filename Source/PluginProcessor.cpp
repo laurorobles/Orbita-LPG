@@ -217,6 +217,14 @@ bool OrbitaLPGAudioProcessor::isBusesLayoutSupported(const BusesLayout& layouts)
 
 void OrbitaLPGAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages) {
     juce::ScopedNoDenormals noDenormals; buffer.clear();
+    
+    if (!LicenseManager::isLicensed()) {
+        demoSampleCount += buffer.getNumSamples();
+        if (demoSampleCount > getSampleRate() * 60 * 10) {
+            demoExpired.store(true);
+            return;
+        }
+    }
     auto* playhead = getPlayHead(); 
     
     bool host_is_playing = false;
