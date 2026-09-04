@@ -1,5 +1,6 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "BinaryData.h"
 
 static std::vector<int> gen_euclid(int pulses, int steps, int offset) {
     std::vector<int> pat(steps, 0); if (steps == 0) return pat;
@@ -778,7 +779,7 @@ void OrbitaLPGAudioProcessorEditor::paint(juce::Graphics& g) {
     g.drawLine(center.x, center.y - maxR, center.x, center.y + maxR);
 
     if (logoImage.isValid()) {
-        float logoSize = maxR * 0.55f;
+        float logoSize = maxR * 1.9f;
         juce::Rectangle<float> logoBounds(center.x - logoSize * 0.5f, center.y - logoSize * 0.5f, logoSize, logoSize);
         g.drawImageWithin(logoImage, logoBounds.getX(), logoBounds.getY(), logoBounds.getWidth(), logoBounds.getHeight(),
                           juce::RectanglePlacement::centred | juce::RectanglePlacement::onlyReduceInSize, true);

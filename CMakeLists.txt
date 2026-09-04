@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(OrbitaLPG VERSION 1.2.0)
+project(OrbitaLPG VERSION 1.2.1)
 
 # Fetch JUCE
 include(FetchContent)
@@ -33,9 +33,17 @@ target_compile_definitions(OrbitaLPG PUBLIC
     JUCE_VST3_CAN_REPLACE_VST2=0
 )
 
+juce_add_binary_data(OrbitaLPG_BinaryData
+    HEADER_NAME "BinaryData.h"
+    NAMESPACE "BinaryData"
+    SOURCES
+        assets/logo.png
+)
+
 target_link_libraries(OrbitaLPG PRIVATE
     juce::juce_audio_utils
     juce::juce_dsp
     juce::juce_gui_extra
+    OrbitaLPG_BinaryData
 )
 juce_generate_juce_header(OrbitaLPG)
