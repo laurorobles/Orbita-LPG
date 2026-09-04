@@ -1,25 +1,33 @@
-# 📋 REGLAS DE LANZAMIENTO — ÓRBITA-LPG / EXTASIS RECORDS
+# 📦 RELEASE RULES & DEPLOYMENT
 
-## Versiones
-- Formato: **SemVer** (`MAJOR.MINOR.PATCH`)
-- Sincronizar en `CMakeLists.txt` antes de cada release
+This project uses an automated CI/CD pipeline via GitHub Actions to compile and distribute binaries across all operating systems.
 
-## Checklist pre-release
-- [ ] Versión actualizada en `CMakeLists.txt`
-- [ ] `README.md` actualizado (features, screenshot)
-- [ ] `MANUAL.md` refleja todos los parámetros actuales
-- [ ] `TECHNICAL.md` actualizado (formatos, requisitos)
-- [ ] `ARCHITECTURE.md` refleja el DSP actual
-- [ ] Git tag `vX.Y.Z` creado y pusheado
-- [ ] GitHub Actions compiló exitosamente para Windows, macOS y Linux
-- [ ] Release notes publicadas en GitHub con enlace a Gumroad
-- [ ] `screenshot.png` en `assets/` actualizado con la UI actual
+## 1. Automated Pipeline (GitHub Actions)
+The workflow is defined in `.github/workflows/build.yml`.
+- **Triggers:** Pushing a tag starting with `v` (e.g., `v1.2.1`) triggers the Release job.
+- **Runners:** 
+  - `ubuntu-latest` (Linux x64)
+  - `windows-latest` (Windows x64)
+- **Outputs:** Zips the VST3, CLAP, and Standalone apps along with all Markdown documentation and installer scripts, then creates an official GitHub Release.
 
-## Comando de release
-```bash
-git tag -a vX.Y.Z -m "Descripción del release"
-git push origin vX.Y.Z
+## 2. macOS Compilation
+Due to instability and limitations with GitHub's Apple Silicon runners, the macOS binaries (VST3, AU, CLAP, Standalone) are **built locally**.
+- **Process:**
+  1. Modify code.
+  2. Run `cmake -B build -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"`
+  3. Run `cmake --build build --config Release --parallel`
+  4. Run `package_mac_v2.sh` to zip the artifacts into `Orbita-LPG-macOS-vX.X.X.zip`.
+  5. Manually attach the zip to the automated GitHub release.
+
+## 3. Version Bumping
+Before creating a new release, you must update the version string in `CMakeLists.txt`:
+```cmake
+project(OrbitaLPG VERSION X.X.X)
 ```
-El pipeline de GitHub Actions compila automáticamente y publica el release.
-
-> **Licencia:** [http://laurorobles.gumroad.com](http://laurorobles.gumroad.com)
+Then commit, tag, and push:
+```bash
+git add .
+git commit -m "Prepare release vX.X.X"
+git tag -a vX.X.X -m "Release vX.X.X"
+git push origin main --tags
+```

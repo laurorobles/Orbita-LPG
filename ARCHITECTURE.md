@@ -1,86 +1,61 @@
-# 🔬 ARQUITECTURA DSP — ÓRBITA-LPG
+# 🏛️ SOFTWARE ARCHITECTURE — ORBITA-LPG
 
-## Flujo de señal completo
+This document provides a high-level overview of the C++ class structure and data flow in Orbita-LPG.
 
-```mermaid
-graph TD
-    CLK["Clock / DAW Transport
-(BPM, Swing, Phase-Lock PPQ Sync)"] --> SEQ
+## 1. Core Classes
+### `OrbitaLPGAudioProcessor` (PluginProcessor.h/cpp)
+The main brain of the plugin. Inherits from `juce::AudioProcessor`.
+- **Responsibilities:**
+  - Handles the audio callback `processBlock`.
+  - Manages the `juce::AudioProcessorValueTreeState` (APVTS) which holds all parameters.
+  - Syncs with the DAW via `getPlayHead()`.
+  - Distributes DSP work to the 6 voices.
+  - Handles MIDI output buffering.
 
-    subgraph TRACKS["6 Tracks Independientes"]
-        SEQ["Euclidean Sequencer
-(Bjorklund O(n) Bucket, Rate Divisors)"]
-        SEQ -->|Trigger| ENV["Rise/Fall Envelope
-(281 Mode: TRANS/SUST/CYCLE)"]
+### `WestCoastVoice` (PluginProcessor.h)
+A struct representing a single synthesizer channel. 6 instances are created in the AudioProcessor.
+- **Responsibilities:**
+  - Stores phase accumulators for the oscillator.
+  - Stores states for the ADAA wavefolder, Vactrol slew limiters, and SVF filter.
+  - Processes audio sample-by-sample for its specific channel.
+  - Tracks active MIDI notes and schedules `NoteOff` messages.
 
-        OSC["Triangle↔Square Oscillator
-(Morph parameter)"]
-        OSC -->|FM self-feedback| OSC
-        OSC --> WF["Wavefolder
-sin(x·π/2) non-linear saturation"]
-        WF --> NZ["Noise Mix
-(white noise blend)"]
+### `OrbitaLPGAudioProcessorEditor` (PluginEditor.h/cpp)
+The GUI class. Inherits from `juce::AudioProcessorEditor`.
+- **Responsibilities:**
+  - Renders the Neubrutalist UI framework.
+  - Draws the Euclidean circles dynamically in `paint()`.
+  - Uses `juce::AudioProcessorValueTreeState::SliderAttachment` (and Button/ComboBox) to bind UI controls to DSP parameters in real-time.
+  - Manages the License Activation Overlay.
 
-        ENV -->|LPG trigger| VACTROL["Vactrol LPG Emulation
-(292 Mode: VCA/LPG/VCF)
-vactrol_state += (env - state) × speed"]
-        NZ --> VACTROL
-        VACTROL --> VOL["Track Volume"]
-    end
+### `LicenseManager` (LicenseManager.h)
+Static class managing DRM.
+- **Responsibilities:**
+  - Hashes and validates 16-character keys.
+  - Reads/Writes the `license.key` file in the user's OS AppData folder.
 
-    VOL -->|Σ 6 voices| ECHO
+## 2. Audio Data Flow (processBlock)
+1. **Clock Sync:** Reads DAW `currentPositionInfo`. Calculates absolute PPQ position.
+2. **Buffer Clear:** Silences the audio buffer if `demoExpired` is true and `!LicenseManager::isLicensed()`.
+3. **MIDI Out Clear:** Clears the incoming `juce::MidiBuffer` to prepare for output generation.
+4. **Voice Processing Loop (Channels 1-6):**
+   - **Sequencer Update:** Calculates the Euclidean pattern. Checks if the PPQ has crossed a gate threshold.
+   - **Trigger:** If a pulse triggers, resets the voice's pitch envelope and Vactrol logic. Queues a `MIDI NoteOn`.
+   - **DSP Loop (Sample by Sample):**
+     - Generates Morphing wave.
+     - Applies Auto-FM.
+     - Applies ADAA Wavefolder.
+     - Adds Noise.
+     - Applies Vactrol LPG / VCA / VCF logic.
+     - Tracks note length and queues `MIDI NoteOff` when the gate samples run out.
+5. **Master Bus Processing:**
+   - Sums all 6 voices.
+   - Applies Global Drive.
+   - Applies Space Echo (Delay with Wow/Flutter).
+   - Hard clips at -0.1 dBFS.
 
-    subgraph FX["Global FX"]
-        ECHO["Space Echo
-juce::dsp::DelayLine
-+ Lagrange3rd Intp
-+ Wow LFO (sine flutter)"]
-    end
-
-    ECHO --> MASTER["Master Drive + Clip
-→ Stereo Output"]
-
-    CHAOS["Chaos
-(stochastic pitch/fold mod)"] -.-> OSC
-    CHAOS -.-> WF
-    SCALE["Global Scale & Root Quantizer
-(14 scales, Note vs Hz Mode)"] -.-> OSC
-```
-
-## Algoritmo de Bjorklund (Euclidean)
-
-```
-pattern = [0] × steps
-bucket = 0
-for i in 0..steps:
-    bucket += pulses
-    if bucket >= steps:
-        bucket -= steps
-        pattern[(i + offset) % steps] = 1
-```
-
-Complejidad: **O(n)** — eficiente para bloques de audio en tiempo real.
-
-## Emulación del Vactrol LPG
-
-El Vactrol físico es un LED + fotoresistencia. Al aumentar el LED (trigger), la LDR tarda en reaccionar (inercia óptica). Al bajar el LED, la LDR tarda aún más en oscurecerse. Este comportamiento asimétrico produce los sonidos percusivos únicos de madera y agua del Buchla.
-
-Modelado digital:
-```cpp
-float speed_open  = resp * 0.5f;          // rápido al abrir
-float speed_close = 0.05f + resp * 0.2f;  // lento al cerrar
-float speed = (env > lpg_state) ? speed_open : speed_close;
-lpg_state += (env - lpg_state) * speed;
-output = signal * lpg_state;
-```
-
-El parámetro `Resp` (0.05–1.0) controla ambas velocidades proporcionalmente, permitiendo simular desde Vactrols muy lentos (0.05) hasta VCAs prácticamente instantáneos (1.0).
-
-## Space Echo (Delay)
-
-Implementado con `juce::dsp::DelayLine<float>` stereo. El Wow modula el tiempo de delay con un LFO senoidal:
-```cpp
-delay_samples += sin(sample * 0.0005f) * wow * 20.0f;
-```
-
-> **Licencia:** [http://laurorobles.gumroad.com](http://laurorobles.gumroad.com)
+## 3. UI Rendering Flow
+- The GUI runs at a fixed 30fps via `juce::Timer`.
+- `timerCallback()` checks if the sequencer positions have moved and triggers a `repaint()` if necessary.
+- `paint()` computes polar coordinates ($r \cos(\theta), r \sin(\theta)$) to draw the rotating dots and active pulses on the 6 concentric radar rings.
+- The `ActivationOverlayComponent` floats above everything and intercepts mouse clicks until a valid license is entered.

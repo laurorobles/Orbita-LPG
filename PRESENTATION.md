@@ -1,21 +1,21 @@
-# 🌟 PRESENTACIÓN — ÓRBITA-LPG
+# 🌟 PRESENTATION — ORBITA-LPG
 
-**Órbita-LPG** es un sintetizador generativo West Coast de 6 voces con secuenciador euclidiano integrado. Inspirado en la filosofía de Don Buchla y los instrumentos modulares de la Costa Oeste de Estados Unidos, este instrumento rompe con el paradigma del sintetizador clásico lineal.
+**Orbita-LPG** is a 6-voice West Coast generative synthesizer with an integrated Euclidean sequencer. Inspired by the philosophy of Don Buchla and the modular instruments of the American West Coast, this instrument breaks away from the classic linear synthesizer paradigm.
 
-## ¿Qué lo hace único?
+## What makes it unique?
 
-- **Ritmo + Timbre unificados:** Cada track euclidiano dispara directamente el motor de síntesis. El ritmo define el timbre y el timbre define el ritmo.
-- **Polimetría instantánea:** Con 6 secuencias de longitud independiente, los patrones nunca se repiten exactamente. Música generativa sin esfuerzo.
-- **Síntesis West Coast auténtica:** Wavefolder, FM feedback y Vactrol LPG simulados con precisión. Los sonidos son imposibles de obtener con un sintetizador convencional.
-- **Space Echo integrado:** Un delay analógico con simulación de flutter de cinta completa cada patch con profundidad y movimiento.
+- **Rhythm + Timbre unified:** Each Euclidean track directly triggers the synthesis engine. The rhythm defines the timbre, and the timbre defines the rhythm.
+- **Instant polymetry:** With 6 independently sized sequences, patterns never repeat exactly the same way twice. Effortless generative music.
+- **Authentic West Coast synthesis:** Precisely modeled Wavefolder, FM feedback, and Vactrol LPGs. These sounds are impossible to obtain with conventional subtractive synthesizers.
+- **Integrated Space Echo:** An analog delay with tape flutter simulation completes every patch with depth and movement.
 
-## Para quién es
+## Who is it for?
 
-- Productores de música electrónica experimental, ambient, IDM y techno.
-- Usuarios de Eurorack que buscan un equivalente digital de una cadena Buchla.
-- Músicos interesados en composición generativa y ritmos no occidentales.
-- Artistas de live performance que necesitan texturas en evolución constante.
+- Producers of experimental electronic music, ambient, IDM, and techno.
+- Eurorack users looking for a digital equivalent of a Buchla chain.
+- Musicians interested in generative composition and non-Western rhythms.
+- Live performance artists who need constantly evolving textures.
 
-## Muestras de sonido y compra
+## Sound Demos and Purchase
 
 > 🔑 **[http://laurorobles.gumroad.com](http://laurorobles.gumroad.com)**

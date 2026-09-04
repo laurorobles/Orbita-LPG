@@ -1,65 +1,65 @@
-# 🪐 ÓRBITA-LPG
+# 🪐 ORBITA-LPG
 
-**Órbita-LPG** es un ecosistema generativo y sintetizador polimétrico de 6 voces. Su arquitectura está inspirada de manera intrínseca en la filosofía de diseño modular de la **Costa Oeste (West Coast)** de Estados Unidos, un paradigma pionerizado por genios como Don Buchla en los años 70. 
+**Orbita-LPG** is a generative ecosystem and 6-voice polymetric synthesizer. Its architecture is intrinsically inspired by the **West Coast** modular design philosophy of the United States—a paradigm pioneered by geniuses like Don Buchla in the 1970s.
 
-A diferencia de la síntesis sustractiva tradicional oriental (Moog), donde comienzas con una onda rica en armónicos y utilizas un filtro para sustraerlos, Órbita-LPG utiliza el paradigma aditivo y no-lineal. Comienzas con un tono relativamente puro y utilizas matemáticas no-lineales, modulación y saturación para *inyectar* complejidad armónica extrema. 
+Unlike traditional subtractive (East Coast / Moog-style) synthesis, where you start with a harmonically rich waveform and use a filter to subtract harmonics, Orbita-LPG utilizes an additive and non-linear paradigm. You start with a relatively pure tone and use non-linear mathematics, modulation, and saturation to *inject* extreme harmonic complexity.
 
-El sintetizador está compuesto por una matriz de **6 Canales Independientes**, donde cada canal es un instrumento y un cerebro rítmico en sí mismo. Cada uno de los canales cuenta con los siguientes módulos interconectados:
+The synthesizer consists of a matrix of **6 Independent Channels**, where each channel is both an instrument and a rhythmic brain. Each channel features the following interconnected modules:
 
-### ⚙️ El Motor de Síntesis por Voz (West Coast Voice)
-*   **Oscilador Morphing (Generador Primario):** El núcleo de cada voz. Permite transicionar el oscilador de manera continua y fluida desde una onda Triangular (pura y percusiva) hasta una onda Cuadrada (hueca y rica en armónicos impares).
-*   **Wavefolder ADAA:** En lugar de saturar la señal cortando los picos (clipping), el Wavefolder "dobla" la onda sobre sí misma usando la función matemática `sin(x * pi/2)`. Esto genera armónicos metálicos y texturas ricas. Implementa un sistema de **Oversampling Anti-Derivative (ADAA)** integrado, que elimina virtualmente las frecuencias de *aliasing* digital consumiendo 0% extra de CPU.
-*   **Auto-FM Feedback:** Un índice de modulación de fase (Inspirado en el mítico Buchla 259) que permite que el oscilador se module a sí mismo, creando tonos de campanas, FM agresivo y ruido caótico de banda ancha.
-*   **Envolvente Pitch-Drop:** Un generador de transitorios logarítmicos dedicado exclusivamente a la afinación del oscilador. Perfecto para sintetizar bombos tipo 808/909, toms analógicos o "zaps" láser.
-*   **Inyector de Ruido (Noise Mix):** Añade ruido blanco texturizado antes de la etapa de amplificación para simular el golpeo físico de una baqueta sobre una membrana o el soplido en un tubo.
+### ⚙️ The West Coast Synthesis Engine (Voice)
+*   **Morphing Oscillator (Primary Generator):** The core of each voice. It allows continuous and fluid morphing from a Triangle wave (pure and percussive) to a Square wave (hollow and rich in odd harmonics).
+*   **ADAA Wavefolder:** Instead of saturating the signal by clipping the peaks, the Wavefolder "folds" the wave back onto itself using the mathematical function `sin(x * pi/2)`. This generates rich, metallic harmonics and textures. It implements an integrated **Anti-Derivative Anti-Aliasing (ADAA) Oversampling** system, which virtually eliminates digital aliasing frequencies while consuming 0% extra CPU.
+*   **Auto-FM Feedback:** A phase modulation index (inspired by the legendary Buchla 259) that allows the oscillator to modulate itself, creating bell tones, aggressive FM, and chaotic wide-band noise.
+*   **Pitch-Drop Envelope:** A logarithmic transient generator dedicated exclusively to the oscillator's tuning. Perfect for synthesizing 808/909 style kicks, analog toms, or laser "zaps".
+*   **Noise Mix:** Injects textured white noise before the amplification stage to simulate the physical strike of a drumstick on a membrane or breath through a tube.
 
-### 💡 El Low Pass Gate (LPG) y Vactrol Óptico
-El sonido generado pasa finalmente por nuestro modelado matemático de un **Vactrol**, el componente opto-eléctrico clásico de la síntesis West Coast (inspirado en el Buchla 292). Tiene 3 modos de operación:
-1.  **VCA (Voltage Controlled Amplifier):** Comportamiento lineal puro para percusiones secas.
-2.  **VCF (Voltage Controlled Filter):** Filtro puro que revela los controles ocultos de `Brightness` y `Resonance` para barridos armónicos.
-3.  **LPG (Low Pass Gate):** El modo rey. Acopla el filtro y el volumen simultáneamente.
-Además de los clásicos controles de ataque (`Rise`) y decaimiento (`Fall`), el módulo LPG incluye un control de **Response**. Este parámetro simula la "memoria" óptica o inercia física de la foto-resistencia del Vactrol, impartiendo una percusividad acústica inigualable (como el golpeo sobre madera, membranas o xilófonos conocidos como "Buchla Bongos").
+### 💡 The Low Pass Gate (LPG) and Optical Vactrol
+The generated sound ultimately passes through our mathematical model of a **Vactrol**, the classic opto-electrical component of West Coast synthesis (inspired by the Buchla 292). It features 3 operational modes:
+1.  **VCA (Voltage Controlled Amplifier):** Pure linear behavior for dry percussions.
+2.  **VCF (Voltage Controlled Filter):** Pure filter that reveals hidden `Brightness` and `Resonance` controls for harmonic sweeps.
+3.  **LPG (Low Pass Gate):** The king mode. Couples the filter and volume simultaneously.
+In addition to the classic attack (`Rise`) and decay (`Fall`) controls, the LPG module includes a **Response** parameter. This parameter simulates the optical "memory" or physical inertia of the Vactrol's photo-resistor, imparting an unparalleled acoustic percussiveness (like striking wood, membranes, or xylophones, famously known as "Buchla Bongos").
 
-### 🎲 El Cerebro: Secuenciador Euclidiano Polimétrico
-El verdadero corazón de Órbita-LPG es su secuenciador matriz. En lugar de un clásico secuenciador de pasos lineal, utiliza **6 secuenciadores Euclidianos** simultáneos (basados en el algoritmo de Bjorklund).
-*   Configura `Steps` (longitud del ciclo), `Pulses` (notas activas) y `Offset` (rotación) de forma independiente para cada una de las 6 voces.
-*   **Divisores de Reloj Independientes:** Cada voz puede correr a su propia velocidad (`Rate`: 1/4, 1/8, 1/16, 1/32). Esto permite crear "Polimetría Infinita", donde los ritmos se desincronizan, evolucionan y se vuelven a entrelazar orgánicamente tras decenas de compases, generando un paisaje sonoro vivo con apenas unos pocos clics.
-*   **Modo Hz vs Note:** Desconecta los secuenciadores de la matriz tonal y afina los osciladores en frecuencias absolutas (`Hz`), o enciérralos en una cuadrícula musical controlada por el...
+### 🎲 The Brain: Polymetric Euclidean Sequencer
+The true heart of Orbita-LPG is its sequencer matrix. Instead of a classic linear step sequencer, it utilizes **6 simultaneous Euclidean sequencers** (based on the Bjorklund algorithm).
+*   Configure `Steps` (cycle length), `Pulses` (active notes), and `Offset` (rotation) independently for each of the 6 voices.
+*   **Independent Clock Dividers:** Each voice can run at its own speed (`Rate`: 1/4, 1/8, 1/16, 1/32). This allows for "Infinite Polymetry", where rhythms fall out of sync, evolve, and organically weave back together over dozens of bars, generating a living soundscape with just a few clicks.
+*   **Hz vs Note Mode:** Disconnect the sequencers from the tonal matrix and tune the oscillators in absolute frequencies (`Hz`), or lock them into a musical grid controlled by the...
 
-### 🌐 Módulos Globales y FX
-*   **Cuantizador de Escalas:** Una tónica global y 14 escalas musicales distintas obligan a todos los osciladores a mantenerse en armonía perfecta. El generador nunca tocará una nota fuera de la escala elegida.
-*   **Space Echo (Analog Delay):** Un módulo de delay maestro estéreo en la salida del plugin. Emula las imperfecciones mecánicas de una cinta magnética antigua mediante algoritmos Wow/Flutter interpolados por LFOs, dándole una dimensión profunda al sonido.
-*   **Generador de Caos y Swing:** Añade imperfección humana a la sincronía y saltos probabilísticos en el algoritmo Euclidiano.
-*   **MIDI Out Generativo:** Órbita-LPG no solo genera sonido; ¡también genera MIDI! Envía todo su caos polimétrico hacia tu DAW (`MIDI NoteOn` / `NoteOff`) para controlar otros sintetizadores, cajas de ritmo y hardware analógico externo.
-*   **Gestor de Presets (XML):** Carga y guarda tus universos sonoros en archivos `.xml` para compartirlos o intercambiarlos entre Ableton, Logic, FL Studio, etc.
+### 🌐 Global Modules and FX
+*   **Scale Quantizer:** A global Root and 14 different musical scales force all oscillators to remain in perfect harmony. The generative engine will never play an out-of-scale note.
+*   **Space Echo (Analog Delay):** A master stereo delay module on the plugin's output. It emulates the mechanical imperfections of vintage magnetic tape using Wow/Flutter algorithms interpolated by LFOs, giving the sound profound depth.
+*   **Chaos and Swing Generator:** Adds human imperfection to the timing and probabilistic jumps in the Euclidean algorithm.
+*   **Generative MIDI Out:** Orbita-LPG doesn't just generate sound; it generates MIDI! It sends all of its polymetric chaos to your DAW (`MIDI NoteOn` / `NoteOff`) to control other synthesizers, drum machines, and external analog hardware.
+*   **Preset Manager (XML):** Load and save your sonic universes in `.xml` files to share or seamlessly swap them between Ableton, Logic, FL Studio, etc.
 
-El resultado es un instrumento donde **el ritmo define el timbre y el timbre define el ritmo**.
+The result is an instrument where **rhythm defines timbre, and timbre defines rhythm**.
 
 ---
 
-## 🛠 Instalación y Requisitos
+## 🛠 Installation and Requirements
 
-**Compatibilidad:**
-- **macOS** (10.13+): VST3, AU, CLAP, Standalone. *(Soporte nativo Apple Silicon M1/M2/M3 y Intel)*.
+**Compatibility:**
+- **macOS** (10.13+): VST3, AU, CLAP, Standalone. *(Native support for Apple Silicon M1/M2/M3 and Intel)*.
 - **Windows** (10/11 64-bit): VST3, CLAP, Standalone.
 - **Linux** (Ubuntu 20.04+): VST3, CLAP, Standalone.
 
-**Pasos de Instalación:**
-1. Descarga el archivo `.zip` para tu sistema operativo desde la sección de **Releases** en GitHub.
-2. Descomprime y ejecuta los instaladores o arrastra los archivos a tus carpetas correspondientes:
+**Installation Steps:**
+1. Download the `.zip` file for your operating system from the **Releases** section on GitHub.
+2. Unzip and run the installers, or drag the files into your corresponding plugin folders:
    - **Windows:** `C:\Program Files\Common Files\VST3`
    - **Mac VST3:** `/Library/Audio/Plug-Ins/VST3`
    - **Mac AU:** `/Library/Audio/Plug-Ins/Components`
-3. Abre tu DAW, escanea tus plugins y busca **Orbita-LPG**.
-4. ¡Disfruta! El plugin incluye 10 minutos de uso continuo, tras los cuales deberás introducir tu **Licencia Oficial** en la ventana flotante.
+3. Open your DAW, scan your plugins, and look for **Orbita-LPG**.
+4. Enjoy! The plugin includes 10 minutes of continuous evaluation time, after which you must enter your **Official License** in the floating activation window.
 
 ---
 
-## 🔑 Obtención de Licencia
+## 🔑 Obtaining a License
 
-Órbita-LPG requiere de una clave de licencia (16 caracteres) para uso comercial ilimitado. Puedes adquirirla y apoyar el desarrollo en nuestra tienda:
+Orbita-LPG requires a 16-character license key for unlimited commercial use. You can purchase one and support the development at our store:
 
-> **[🛒 Obtener Licencia en Gumroad](http://laurorobles.gumroad.com)**
+> **[🛒 Get License on Gumroad](http://laurorobles.gumroad.com)**
 
 ---
-*Desarrollado con ❤️ usando JUCE por Extasis Records / Lauro Robles.*
+*Developed with ❤️ using JUCE by Extasis Records / Lauro Robles.*
