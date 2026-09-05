@@ -192,12 +192,11 @@ juce::AudioProcessorValueTreeState::ParameterLayout OrbitaLPGAudioProcessor::cre
         layout.add(std::make_unique<juce::AudioParameterChoice>("t"+t+"_mode292", "T"+t+" 292 Mode", juce::StringArray{"VCA", "LPG", "VCF"}, m292));
     };
 
-    addTrackParams(1, 16, 4, 0, 36.0f, 0.8f, 0.0f, 0.1f, 0.0f, 0.001f, 0.5f, 0.8f, 0.3f, 0.1f, 0.0f, 0.9f, 0, 1); 
-    addTrackParams(2, 16, 2, 4, 60.0f, 0.3f, 1.0f, 0.8f, 0.5f, 0.001f, 0.3f, 0.9f, 0.9f, 0.3f, 0.8f, 0.8f, 0, 0); 
-    addTrackParams(3, 16, 16, 0, 80.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.001f, 0.05f, 1.0f, 1.0f, 0.0f, 1.0f, 0.45f, 0, 0); 
-    addTrackParams(4, 16, 4, 2, 80.0f, 0.0f, 0.5f, 0.0f, 0.0f, 0.01f, 0.4f, 0.9f, 0.8f, 0.2f, 1.0f, 0.7f, 0, 1); 
-    addTrackParams(5, 16, 5, 2, 48.0f, 0.0f, 0.3f, 0.6f, 0.0f, 0.01f, 0.25f, 0.6f, 0.4f, 0.6f, 0.0f, 0.85f, 0, 1); 
-    addTrackParams(6, 12, 5, 0, 72.0f, 0.1f, 0.0f, 0.4f, 0.3f, 0.001f, 0.15f, 0.4f, 0.6f, 0.4f, 0.0f, 0.7f, 0, 1); 
+    // Init Patch: T1 has a basic Kick, T2-T6 are completely initialized to 0 pulses and neutral settings
+    addTrackParams(1, 16, 4, 0, 36.0f, 0.8f, 0.0f, 0.0f, 0.0f, 0.001f, 0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 0.8f, 0, 1); 
+    for(int i=2; i<=6; i++) {
+        addTrackParams(i, 16, 0, 0, 60.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.001f, 0.3f, 0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 0, 1); 
+    } 
 
     return layout;
 }
