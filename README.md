@@ -62,4 +62,4 @@ Orbita-LPG requires a 16-character license key for unlimited commercial use. You
 > **[🛒 Get License on Gumroad](http://laurorobles.gumroad.com)**
 
 ---
-*Developed with ❤️ using JUCE by Extasis Records / Lauro Robles.*
+*Developed with ❤️ using JUCE by Extasis Records / Lauro Robles (laurorobles@gmail.com).*

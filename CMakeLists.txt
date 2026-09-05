@@ -11,6 +11,8 @@ FetchContent_MakeAvailable(juce)
 
 juce_add_plugin(OrbitaLPG
     COMPANY_NAME "Extasis Records"
+    COMPANY_EMAIL "laurorobles@gmail.com"
+    COMPANY_WEBSITE "http://laurorobles.gumroad.com"
     IS_SYNTH TRUE
     NEEDS_MIDI_INPUT TRUE
     NEEDS_MIDI_OUTPUT TRUE
