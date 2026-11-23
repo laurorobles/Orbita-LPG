@@ -1,18 +1,18 @@
 cmake_minimum_required(VERSION 3.15)
-project(OrbitaLPG VERSION 1.2.3)
+project(OrbitaLPG VERSION 2.0.0)
 
-# Fetch JUCE
 include(FetchContent)
 FetchContent_Declare(
     juce
-    URL https://github.com/juce-framework/JUCE/archive/refs/tags/8.0.1.zip
+    URL https://github.com/juce-framework/JUCE/archive/refs/tags/8.0.15.zip
 )
 FetchContent_MakeAvailable(juce)
 
 juce_add_plugin(OrbitaLPG
     COMPANY_NAME "Extasis Records"
     COMPANY_EMAIL "laurorobles@gmail.com"
-    COMPANY_WEBSITE "http://laurorobles.gumroad.com"
+    COMPANY_WEBSITE "https://github.com/laurorobles/Orbita-LPG"
+    BUNDLE_ID "com.extasisrecords.OrbitaLPG"
     IS_SYNTH TRUE
     NEEDS_MIDI_INPUT TRUE
     NEEDS_MIDI_OUTPUT TRUE

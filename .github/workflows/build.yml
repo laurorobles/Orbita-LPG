@@ -57,39 +57,29 @@ jobs:
         shell: bash
         run: |
           mkdir -p artifacts
-          
-          # VST3
-          for path in "build/OrbitaLPG_artefacts/VST3/Orbita-LPG.vst3" "build/OrbitaLPG_artefacts/Release/VST3/Orbita-LPG.vst3" "build/OrbitaLPG_artefacts/VST3/Extasis *.vst3" "build/OrbitaLPG_artefacts/Release/VST3/Extasis *.vst3"; do
+
+          for path in "build/OrbitaLPG_artefacts/VST3/Orbita-LPG.vst3" "build/OrbitaLPG_artefacts/Release/VST3/Orbita-LPG.vst3"; do
             if [ -e "$path" ]; then cp -r "$path" artifacts/; fi
           done
-          
-          # AU
+
           for path in "build/OrbitaLPG_artefacts/AU/Orbita-LPG.component" "build/OrbitaLPG_artefacts/Release/AU/Orbita-LPG.component"; do
             if [ -e "$path" ]; then cp -r "$path" artifacts/; fi
           done
-          
-          # CLAP
+
           for path in "build/OrbitaLPG_artefacts/CLAP/Orbita-LPG.clap" "build/OrbitaLPG_artefacts/Release/CLAP/Orbita-LPG.clap"; do
             if [ -e "$path" ]; then cp -r "$path" artifacts/; fi
           done
-          
-          # Standalone Win
-          for path in "build/OrbitaLPG_artefacts/Standalone/Orbita-LPG.exe" "build/OrbitaLPG_artefacts/Release/Standalone/Orbita-LPG.exe"; do
+
+          for path in "build/OrbitaLPG_artefacts/Standalone/Orbita-LPG.exe" "build/OrbitaLPG_artefacts/Release/Standalone/Orbita-LPG.exe" "build/OrbitaLPG_artefacts/Standalone/Orbita-LPG.app" "build/OrbitaLPG_artefacts/Release/Standalone/Orbita-LPG.app" "build/OrbitaLPG_artefacts/Standalone/Orbita-LPG" "build/OrbitaLPG_artefacts/Release/Standalone/Orbita-LPG"; do
             if [ -e "$path" ]; then cp -r "$path" artifacts/; fi
           done
-          
-          # Standalone Mac
-          for path in "build/OrbitaLPG_artefacts/Standalone/Orbita-LPG.app" "build/OrbitaLPG_artefacts/Release/Standalone/Orbita-LPG.app"; do
-            if [ -e "$path" ]; then cp -r "$path" artifacts/; fi
-          done
-          
-          # Docs & Installer
+
           if [ -d "installer" ]; then
             cp -r installer artifacts/
             chmod +x artifacts/installer/INSTALL_MAC.command 2>/dev/null || true
             chmod +x artifacts/installer/INSTALL_LINUX.sh 2>/dev/null || true
           fi
-          for doc in MANUAL.md README.md PRESENTATION.md TECHNICAL.md FICHA_TECNICA.md ARCHITECTURE.md RELEASE_RULES.md; do
+          for doc in LICENSE README.md MANUAL.md TECHNICAL.md ARCHITECTURE.md PRESENTATION.md; do
             if [ -f "$doc" ]; then cp "$doc" artifacts/; fi
           done
 
@@ -135,27 +125,24 @@ jobs:
         with:
           name: "Orbita-LPG ${{ github.ref_name }}"
           body: |
-            ### 🚀 Lanzamiento Oficial ${{ github.ref_name }}
-            
-            Este release incluye los binarios e instaladores oficiales para **Orbita-LPG** en Windows, macOS y Linux.
-            
-            **Formatos incluidos:**
-            - **VST3**
-            - **CLAP**
-            - **Audio Unit (AU)** (macOS)
-            - **Standalone** (Aplicación independiente)
-            
-            **Documentación:**
-            - Manual de Usuario (`MANUAL.md`)
-            - Ficha Técnica (`TECHNICAL.md`)
-            - Presentación (`PRESENTATION.md`)
-            - Arquitectura DSP (`ARCHITECTURE.md`)
-            
-            ---
-            
-            ### 🔑 Licencia y Activación
-            Consigue tu clave de licencia oficial en **[Gumroad](http://laurorobles.gumroad.com)**.
-            *El plugin funcionará en modo demo (silenciado a los 10 minutos de uso continuo) hasta ingresar la licencia.*
+            ### 🪐 Orbita-LPG ${{ github.ref_name }} — Free & Open Source (GPLv3)
+
+            **Orbita-LPG** is now 100% free and open-source under the GNU General Public License v3.0 — no license keys, no demo timers, no restrictions.
+
+            **Included Formats:**
+            - **VST3** (Windows, macOS, Linux)
+            - **CLAP** (Windows, macOS, Linux)
+            - **Audio Unit / AU** (macOS)
+            - **Standalone** (Windows, macOS, Linux)
+
+            **Highlights in v2.0.0:**
+            - 🔓 **100% Free & Open Source (GPLv3)** — All DRM and demo timers removed.
+            - 🌊 **True 1st-Order ADAA Wavefolder** — Alias-free harmonic folding with zero latency.
+            - 🥁 **Real Groove Swing & 32-Step Euclidean Engine** — Sample-accurate swung PPQ timing, unified DSP/UI Euclidean patterns, and 0–32 pulses per voice.
+            - 📼 **Stereo RE-201 Space Echo** — Quadrature LFO Wow/Flutter, tape feedback warmth filter, and smooth pitch-glide delay modulation.
+            - 🎨 **Refined Resizable UI** — Live Vactrol-glow clickable radar, color-coded Buchla 259/281/292 sections, stereo master VU meter, keyboard shortcuts, and embedded cross-platform artwork.
+
+            **Documentation included:** `README.md`, `MANUAL.md`, `TECHNICAL.md`, `ARCHITECTURE.md`, `PRESENTATION.md`.
           generate_release_notes: true
           files: final-assets/*
         env:

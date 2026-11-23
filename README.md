@@ -1,65 +1,84 @@
 # 🪐 ORBITA-LPG
 
-**Orbita-LPG** is a generative ecosystem and 6-voice polymetric synthesizer. Its architecture is intrinsically inspired by the **West Coast** modular design philosophy of the United States—a paradigm pioneered by geniuses like Don Buchla in the 1970s.
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
+[![Free & Open Source](https://img.shields.io/badge/Free%20%26%20Open%20Source-100%25-brightgreen.svg)](https://github.com/laurorobles/Orbita-LPG)
 
-Unlike traditional subtractive (East Coast / Moog-style) synthesis, where you start with a harmonically rich waveform and use a filter to subtract harmonics, Orbita-LPG utilizes an additive and non-linear paradigm. You start with a relatively pure tone and use non-linear mathematics, modulation, and saturation to *inject* extreme harmonic complexity.
+**Orbita-LPG** is a **free and open-source** 6-voice West Coast polymetric synthesizer and generative Euclidean sequencer, licensed under the **GNU General Public License v3.0 (GPLv3)**.
 
-The synthesizer consists of a matrix of **6 Independent Channels**, where each channel is both an instrument and a rhythmic brain. Each channel features the following interconnected modules:
+Inspired by the West Coast modular design philosophy pioneered by Don Buchla (259 / 281 / 292), Orbita-LPG replaces traditional subtractive synthesis with an additive, non-linear architecture: pure oscillators sculpted through wavefolding, self-FM, pitch-drop transients, and opto-electrical Vactrol Low Pass Gates.
 
-### ⚙️ The West Coast Synthesis Engine (Voice)
-*   **Morphing Oscillator (Primary Generator):** The core of each voice. It allows continuous and fluid morphing from a Triangle wave (pure and percussive) to a Square wave (hollow and rich in odd harmonics).
-*   **ADAA Wavefolder:** Instead of saturating the signal by clipping the peaks, the Wavefolder "folds" the wave back onto itself using the mathematical function `sin(x * pi/2)`. This generates rich, metallic harmonics and textures. It implements an integrated **Anti-Derivative Anti-Aliasing (ADAA) Oversampling** system, which virtually eliminates digital aliasing frequencies while consuming 0% extra CPU.
-*   **Auto-FM Feedback:** A phase modulation index (inspired by the legendary Buchla 259) that allows the oscillator to modulate itself, creating bell tones, aggressive FM, and chaotic wide-band noise.
-*   **Pitch-Drop Envelope:** A logarithmic transient generator dedicated exclusively to the oscillator's tuning. Perfect for synthesizing 808/909 style kicks, analog toms, or laser "zaps".
-*   **Noise Mix:** Injects textured white noise before the amplification stage to simulate the physical strike of a drumstick on a membrane or breath through a tube.
-
-### 💡 The Low Pass Gate (LPG) and Optical Vactrol
-The generated sound ultimately passes through our mathematical model of a **Vactrol**, the classic opto-electrical component of West Coast synthesis (inspired by the Buchla 292). It features 3 operational modes:
-1.  **VCA (Voltage Controlled Amplifier):** Pure linear behavior for dry percussions.
-2.  **VCF (Voltage Controlled Filter):** Pure filter that reveals hidden `Brightness` and `Resonance` controls for harmonic sweeps.
-3.  **LPG (Low Pass Gate):** The king mode. Couples the filter and volume simultaneously.
-In addition to the classic attack (`Rise`) and decay (`Fall`) controls, the LPG module includes a **Response** parameter. This parameter simulates the optical "memory" or physical inertia of the Vactrol's photo-resistor, imparting an unparalleled acoustic percussiveness (like striking wood, membranes, or xylophones, famously known as "Buchla Bongos").
-
-### 🎲 The Brain: Polymetric Euclidean Sequencer
-The true heart of Orbita-LPG is its sequencer matrix. Instead of a classic linear step sequencer, it utilizes **6 simultaneous Euclidean sequencers** (based on the Bjorklund algorithm).
-*   Configure `Steps` (cycle length), `Pulses` (active notes), and `Offset` (rotation) independently for each of the 6 voices.
-*   **Independent Clock Dividers:** Each voice can run at its own speed (`Rate`: 1/4, 1/8, 1/16, 1/32). This allows for "Infinite Polymetry", where rhythms fall out of sync, evolve, and organically weave back together over dozens of bars, generating a living soundscape with just a few clicks.
-*   **Hz vs Note Mode:** Disconnect the sequencers from the tonal matrix and tune the oscillators in absolute frequencies (`Hz`), or lock them into a musical grid controlled by the...
-
-### 🌐 Global Modules and FX
-*   **Scale Quantizer:** A global Root and 14 different musical scales force all oscillators to remain in perfect harmony. The generative engine will never play an out-of-scale note.
-*   **Space Echo (Analog Delay):** A master stereo delay module on the plugin's output. It emulates the mechanical imperfections of vintage magnetic tape using Wow/Flutter algorithms interpolated by LFOs, giving the sound profound depth.
-*   **Chaos and Swing Generator:** Adds human imperfection to the timing and probabilistic jumps in the Euclidean algorithm.
-*   **Generative MIDI Out:** Orbita-LPG doesn't just generate sound; it generates MIDI! It sends all of its polymetric chaos to your DAW (`MIDI NoteOn` / `NoteOff`) to control other synthesizers, drum machines, and external analog hardware.
-*   **Preset Manager (XML):** Load and save your sonic universes in `.xml` files to share or seamlessly swap them between Ableton, Logic, FL Studio, etc.
-
-The result is an instrument where **rhythm defines timbre, and timbre defines rhythm**.
+![Orbita-LPG Screenshot](assets/screenshot.png)
 
 ---
 
-## 🛠 Installation and Requirements
+## ✨ Core Modules & Features
 
-**Compatibility:**
-- **macOS** (10.13+): VST3, AU, CLAP, Standalone. *(Native support for Apple Silicon M1/M2/M3 and Intel)*.
+### ⚙️ West Coast Synthesis Engine (6 Independent Voices)
+- **Morphing Oscillator (259-inspired):** Smooth continuous morph from Triangle (pure/percussive) to Square (hollow/rich).
+- **1st-Order ADAA Wavefolder:** Folds the waveform via `sin(x * pi/2)` using Anti-Derivative Anti-Aliasing (ADAA) to generate rich metallic harmonics with minimal aliasing and zero latency.
+- **Auto-FM Feedback:** Phase self-modulation for bells, aggressive metallic timbres, and chaotic transients.
+- **Pitch-Drop Envelope:** Dedicated exponential pitch transient for analog kicks, toms, and laser zaps.
+- **White Noise Strike:** Pre-LPG noise injection for snares, hats, and physical strike transients.
+
+### 💡 Optical Vactrol Low Pass Gate (292) & Function Generator (281)
+- **Buchla 281 Modes:** `TRANS` (percussive one-shot), `SUST` (gate-held sustain), and `CYCLE` (continuous self-retriggering LFO/drone loop).
+- **Buchla 292 Modes:** `VCA` (clean amplifier), `LPG` (coupled optical vactrol filter + amp), and `VCF` (resonant 12 dB/oct State Variable Filter).
+- **Optical Response (`RESP`):** Models CdS photo-resistor decay inertia (15 ms – 1500 ms) for authentic "Buchla Bongo" acoustic ringing.
+
+### 🎲 Polymetric Euclidean Sequencer & Interactive Radar
+- **6 Simultaneous Euclidean Rings:** Independent `Steps` (2–32), `Pulses` (0–32), `Offset` (0–31), and `Rate` (`1/4`, `1/8`, `1/16`, `1/32`).
+- **Real Groove Swing & Chaos:** Sample-accurate PPQ swing engine plus Xorshift PRNG chaos modulation.
+- **Live Vactrol-Glow Radar:** Click any ring directly to select a track (right-click to mute) and watch each voice's optical vactrol energy pulse in real time.
+- **26 Master Genre Kits & 25 Per-Voice Synth Presets:** Instant inspiration plus XML preset Save/Load.
+
+### 🌐 Global FX, Routing & MIDI
+- **Stereo RE-201 Space Echo:** Stereo tape delay with tempo sync, quadrature LFO Wow/Flutter, warm tape feedback filtering, and smooth pitch-glide time modulation.
+- **Global Scale Quantizer:** 14 musical scales + Root note, with per-track `NOTE` / `Hz` toggle.
+- **Multi-Output Audio:** Stereo Master bus plus 6 individual stereo track outputs (`Track 1` – `Track 6`).
+- **Generative MIDI Out & Multi-Timbral MIDI In:** Broadcasts sample-accurate MIDI notes on channels 1–6 to drive external synths/hardware, and accepts MIDI drum triggers (`Ch 1, C1–F1`) or chromatic playing (`Ch 1–6`).
+
+---
+
+## 🛠 Installation
+
+**Pre-built Binaries (Free — No License Required):**
+- **macOS** (10.13+, Universal Apple Silicon & Intel): VST3, AU, CLAP, Standalone.
 - **Windows** (10/11 64-bit): VST3, CLAP, Standalone.
-- **Linux** (Ubuntu 20.04+): VST3, CLAP, Standalone.
+- **Linux** (Ubuntu 20.04+ 64-bit): VST3, CLAP, Standalone.
 
-**Installation Steps:**
-1. Download the `.zip` file for your operating system from the **Releases** section on GitHub.
-2. Unzip and run the installers, or drag the files into your corresponding plugin folders:
-   - **Windows:** `C:\Program Files\Common Files\VST3`
-   - **Mac VST3:** `/Library/Audio/Plug-Ins/VST3`
-   - **Mac AU:** `/Library/Audio/Plug-Ins/Components`
-3. Open your DAW, scan your plugins, and look for **Orbita-LPG**.
-4. Enjoy! The plugin includes 10 minutes of continuous evaluation time, after which you must enter your **Official License** in the floating activation window.
+1. Download the `.zip` archive for your OS from the **[Releases](https://github.com/laurorobles/Orbita-LPG/releases)** page.
+2. Unzip and run the included installer script, or copy the plugin files manually:
+   - **macOS VST3:** `~/Library/Audio/Plug-Ins/VST3`
+   - **macOS AU:** `~/Library/Audio/Plug-Ins/Components`
+   - **Windows VST3:** `C:\Program Files\Common Files\VST3`
+   - **Linux VST3:** `~/.vst3`
+3. Rescan plugins in your DAW and load **Orbita-LPG**.
+
+---
+
+## 💻 Building from Source
+
+Orbita-LPG uses CMake and automatically fetches JUCE 8 via `FetchContent`.
+
+### Prerequisites
+- CMake 3.15+
+- C++17 compiler (Xcode / Clang on macOS, MSVC on Windows, GCC/Clang on Linux)
+- On Linux: `libasound2-dev libjack-jackd2-dev libfreetype6-dev libx11-dev libxcomposite-dev libxcursor-dev libxext-dev libxinerama-dev libxrandr-dev libxrender-dev libwebkit2gtk-4.1-dev libglu1-mesa-dev`
+
+### Build Commands
+```bash
+git clone https://github.com/laurorobles/Orbita-LPG.git
+cd Orbita-LPG
+cmake -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build --config Release --parallel
+```
 
 ---
 
-## 🔑 Obtaining a License
+## 📜 License & Contributing
 
-Orbita-LPG requires a 16-character license key for unlimited commercial use. You can purchase one and support the development at our store:
-
-> **[🛒 Get License on Gumroad](http://laurorobles.gumroad.com)**
+Orbita-LPG is free software licensed under the **[GNU General Public License v3.0](LICENSE)**.
+Contributions, bug reports, presets, and pull requests are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ---
-*Developed with ❤️ using JUCE by Extasis Records / Lauro Robles (laurorobles@gmail.com).*
+*Developed with ❤️ using JUCE by Lauro Robles / Extasis Records (laurorobles@gmail.com).*

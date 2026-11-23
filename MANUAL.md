@@ -1,58 +1,59 @@
 # 📖 USER MANUAL — ORBITA-LPG
 
-Welcome to Orbita-LPG. This manual will guide you through the interface, synthesis concepts, and the generative sequencer matrix.
+Welcome to **Orbita-LPG** (v2.0.0 — Free & Open Source, GPLv3). This manual covers the interface, Euclidean sequencer, West Coast synthesis engine, effects, and MIDI routing.
 
 ## 1. Interface Overview
-The interface is divided into functional blocks, designed with a "Neubrutalist" aesthetic that prioritizes visual clarity over skeuomorphic design.
+The resizable interface is organized into four main modules:
 
-- **Top Bar:** Preset Manager (`LOAD`/`SAVE`), Sequence Toggle (`SEQ: ON/OFF`), Global Configuration (`CONFIG`), and License Activation.
-- **Left Radar:** The visual representation of the 6 Euclidean Sequencers. Each ring represents a Voice (Track). The outermost ring is Voice 1 (Kick/Bass), and the innermost is Voice 6 (Hi-Hats/Noise).
-- **Right Panel (Track Controls):** The synthesis and sequence parameters for the currently selected track.
-- **Bottom Bar:** Global Macro Controls (Volume, Drive, Swing, Chaos, Space Echo) and the Global Scale Quantizer.
+- **Top Bar:** Preset `LOAD` / `SAVE` (`.xml`), Master Kit selector (`00. Init / Empty` through `25. Lo-Fi House`), `PLAY` / `STOP`, `SEQ: ON/OFF`, and `ABOUT` (shortcuts, MIDI map, and project info).
+- **Left Panel (Euclidean Radar & Rhythm Controls):** Concentric rings representing Tracks 1–6 (innermost = T1, outermost = T6). Each ring glows dynamically with its voice's optical Vactrol energy. Click any ring to select it, or right-click to mute it.
+- **Top-Right Panel (Master System):** `M.VOL`, `DRIVE`, `BPM`, `SWING`, `CHAOS`, Global `G.SCALE` and `G.ROOT`, plus a real-time stereo VU meter.
+- **Middle-Right Panel (West Coast Synthesis 259/281/292):** Per-track synth preset menu, `RAND`, `< COPY` / `COPY >`, `NOTE` / `Hz` toggle, `281` and `292` mode selectors, `STRIKE` ping button, and 12 color-coded vertical faders grouped into `OSC 259`, `ENV 281`, `LPG 292`, and `MIX`.
+- **Bottom-Right Panel (RE-201 Space Echo):** Stereo tape delay with `SYNC: ON/OFF`, `TIME`, `FDBK`, `MIX`, and `WOW`.
 
-## 2. The Euclidean Sequencer
-Select a track by clicking its corresponding button (T1 to T6) above the radar.
+## 2. Keyboard Shortcuts
+- **`Space`** — Play / Pause internal transport
+- **`1` – `6`** — Select Track 1 to 6
+- **`M`** — Mute / Unmute currently selected track
+- **`Enter`** — Strike / ping the currently selected voice's LPG
+- **`Esc`** — Close About overlay
+- **Right-Click on `T1`–`T6` or Radar Ring** — Mute / Unmute track
 
-### Rhythm Controls
-- **Steps:** The total length of the cycle (1 to 32 steps).
-- **Pulses:** The number of active triggers distributed evenly across the steps.
-- **Offset:** Rotates the pattern to change the starting beat.
-- **Rate:** The clock divider synchronized to the DAW tempo (1/4, 1/8, 1/16, 1/32).
+## 3. The Euclidean Sequencer
+Select a track (`T1`–`T6` or click its radar ring) to edit its pattern:
+- **Steps (`2–32`):** Total cycle length.
+- **Pulses (`0–32`):** Number of evenly distributed active hits (`0` silences the pattern).
+- **Offset (`0–31`):** Rotates the pattern clockwise.
+- **Rate (`1/4`, `1/8`, `1/16`, `1/32`):** Independent clock divider per track for true polymetry.
+- **Toussaint Rhythms:** Classic ethnomusicological Euclidean patterns (Tresillo, Cinquillo, Bossa, Samba, Rumba, Aka, and polyrhythms).
+- **MUTATE:** Gently mutates the current track by ±1 in Steps, Pulses, or Offset.
 
-*Pro Tip:* Set T1 to 16 Steps / 4 Pulses for a standard 4/4 Kick drum. Set T2 to 15 Steps / 7 Pulses for an evolving, syncopated polymetric percussion that dances around the Kick.
+## 4. West Coast Synthesis Engine
+### OSC 259
+- **PITCH:** Base tuning in quantized musical notes (`NOTE`) or free frequency (`Hz`).
+- **P.DRP:** Exponential pitch-drop transient for kicks, toms, and zaps.
+- **MRPH:** Continuous waveform morph from Triangle (`0.0`) to Square (`1.0`).
+- **FOLD:** 1st-order ADAA Wavefolder for alias-free harmonic folding.
+- **FM:** Auto-FM phase feedback for bells and metallic overtones.
 
-## 3. West Coast Synthesis Engine
-Once a pulse is triggered, it fires the synthesis engine for that track.
+### ENV 281
+- **Modes:** `TRANS` (one-shot percussive), `SUST` (holds while gate is open), `CYCLE` (self-retriggering LFO/loop).
+- **RISE / FALL:** Attack and Decay times.
 
-### Oscillator
-- **Pitch:** Base tuning of the voice (Note mode or Hz mode).
-- **Morph:** Morphs the waveform from a Triangle (0%) to a Square (100%).
-- **Drop:** An aggressive, analog-style pitch envelope. Essential for creating kicks and percussion.
-- **FM:** Auto-Frequency Modulation (Phase Modulation). Modulates the oscillator with itself, creating aggressive, metallic, and bell-like overtones.
-- **Noise:** Mixes in white noise before the filter stage. Great for snares, hi-hats, and physical modeling strikes.
+### LPG 292
+- **Modes:** `VCA` (clean amp), `LPG` (coupled optical vactrol filter + amp), `VCF` (resonant 12 dB/oct filter).
+- **RESP:** Vactrol optical decay inertia (15 ms – 1500 ms).
+- **BRGT / RESO:** Filter cutoff brightness and resonance Q.
 
-### Vactrol / Low Pass Gate (LPG)
-- **Mode Toggle:** Click the `VCA`, `LPG`, or `VCF` text to switch modes.
-  - *VCA:* Standard amplifier.
-  - *VCF:* Standard Low Pass Filter.
-  - *LPG:* Low Pass Gate (Filter and Amplifier linked to a vactrol model).
-- **Rise:** Attack time.
-- **Fall:** Decay time (and Note length for MIDI out).
-- **Response:** The "memory" of the vactrol. Higher values create a sluggish, acoustic-like ringing decay (the "Buchla Bongo" effect).
-- **Brgt (Brightness):** Sets the base frequency of the filter (only active in VCF mode).
-- **Reso (Resonance):** Emphasizes the cutoff frequency (only active in VCF mode).
+### MIX
+- **NOISE:** Pre-LPG white noise mix.
+- **VOL:** Voice output level.
 
-## 4. Global Controls & MIDI
-- **Scale & Root:** Forces all oscillators to snap to musical scales (e.g., C Minor Harmonic).
-- **Note / Hz Mode:** The `NOTE` button next to the Pitch knob switches between quantized musical notes and absolute frequency values.
-- **Swing:** Delays even-numbered 16th notes for groove.
-- **Chaos:** Introduces probability. Higher values cause random sequencer triggers to fail, humanizing the rhythm.
-- **Echo:** Blends a master analog-style tape delay with Wow/Flutter.
-- **Drive:** Master saturation before output.
+## 5. MIDI & Multi-Output Audio
+- **MIDI In (Drum Mode):** Channel 1, notes `C1` (36) to `F1` (41) trigger Tracks 1–6 using each track's internal pitch.
+- **MIDI In (Chromatic Mode):** Channels 1–6 play Tracks 1–6 chromatically (quantized if `NOTE` mode is enabled).
+- **MIDI Out:** The Euclidean sequencer outputs sample-accurate MIDI notes on Channels 1–6 to drive other plugins or external hardware.
+- **Multi-Out Audio:** Route individual stereo buses (`Track 1` – `Track 6`) in your DAW mixer alongside the `Master` bus.
 
-### Using MIDI Out
-Orbita-LPG automatically broadcasts its sequences as standard MIDI notes to your DAW. Route the MIDI output of the Orbita-LPG track to another VST in your DAW to use Orbita as a generative MIDI sequencer for your favorite synths!
-
-## 5. Licensing and Demo
-Orbita-LPG runs in fully functional Demo Mode for **10 minutes** per session. Once the demo expires, the audio will go silent and an activation window will appear.
-Enter your 16-character license key (purchased from Gumroad) and click `ACTIVATE` to unlock the plugin forever.
+---
+*Orbita-LPG is free and open-source software (GPLv3). Developed by Lauro Robles / Extasis Records (laurorobles@gmail.com).*
